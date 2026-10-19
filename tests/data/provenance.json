@@ -1,0 +1,7 @@
+{
+  "accession": "NC_012920.1",
+  "url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=NC_012920.1&rettype=fasta&retmode=text",
+  "seed": 20261019,
+  "length": 16569,
+  "sequence_sha256": "f156ff3f65bbcc80c7ebb9936dceb96b1477b4f8f535c4e1dbe7baea225cbc66"
+}

@@ -1,0 +1,17 @@
+# Build artifacts
+*.o
+*.a
+*.so
+indexer/indexReference
+search/skippy
+
+# Editor / OS
+*~
+*.swp
+.DS_Store
+AGENTS.md
+
+# Generated mitochondrial test artifacts
+tests/results/
+tests/data/mito/*/
+__pycache__/

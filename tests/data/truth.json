@@ -1,0 +1,2227 @@
+[
+  {
+    "group": "short",
+    "read_number": 1,
+    "name": "short_exact_01",
+    "kind": "exact",
+    "start_0based": 0,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 2,
+    "name": "short_exact_02",
+    "kind": "exact",
+    "start_0based": 16419,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 3,
+    "name": "short_exact_03",
+    "kind": "exact",
+    "start_0based": 10575,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 4,
+    "name": "short_exact_04",
+    "kind": "exact",
+    "start_0based": 3941,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 5,
+    "name": "short_exact_05",
+    "kind": "exact",
+    "start_0based": 6945,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 6,
+    "name": "short_exact_06",
+    "kind": "exact",
+    "start_0based": 15403,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 7,
+    "name": "short_exact_07",
+    "kind": "exact",
+    "start_0based": 9588,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 8,
+    "name": "short_exact_08",
+    "kind": "exact",
+    "start_0based": 8742,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 9,
+    "name": "short_exact_09",
+    "kind": "exact",
+    "start_0based": 907,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 10,
+    "name": "short_exact_10",
+    "kind": "exact",
+    "start_0based": 11427,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 11,
+    "name": "short_exact_11",
+    "kind": "exact",
+    "start_0based": 4514,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 12,
+    "name": "short_exact_12",
+    "kind": "exact",
+    "start_0based": 181,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 13,
+    "name": "short_exact_13",
+    "kind": "exact",
+    "start_0based": 9636,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 14,
+    "name": "short_exact_14",
+    "kind": "exact",
+    "start_0based": 14424,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 15,
+    "name": "short_exact_15",
+    "kind": "exact",
+    "start_0based": 8891,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 16,
+    "name": "short_exact_16",
+    "kind": "exact",
+    "start_0based": 10348,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 17,
+    "name": "short_exact_17",
+    "kind": "exact",
+    "start_0based": 2528,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 18,
+    "name": "short_exact_18",
+    "kind": "exact",
+    "start_0based": 2582,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 19,
+    "name": "short_exact_19",
+    "kind": "exact",
+    "start_0based": 12614,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 20,
+    "name": "short_exact_20",
+    "kind": "exact",
+    "start_0based": 8305,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 21,
+    "name": "short_reverse_01",
+    "kind": "reverse",
+    "start_0based": 0,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "-",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 22,
+    "name": "short_reverse_02",
+    "kind": "reverse",
+    "start_0based": 16419,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "-",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 23,
+    "name": "short_reverse_03",
+    "kind": "reverse",
+    "start_0based": 7527,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "-",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 24,
+    "name": "short_reverse_04",
+    "kind": "reverse",
+    "start_0based": 14799,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "-",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 25,
+    "name": "short_reverse_05",
+    "kind": "reverse",
+    "start_0based": 2631,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "-",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 26,
+    "name": "short_reverse_06",
+    "kind": "reverse",
+    "start_0based": 6123,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "-",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 27,
+    "name": "short_reverse_07",
+    "kind": "reverse",
+    "start_0based": 13212,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "-",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 28,
+    "name": "short_reverse_08",
+    "kind": "reverse",
+    "start_0based": 11118,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "-",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 29,
+    "name": "short_reverse_09",
+    "kind": "reverse",
+    "start_0based": 640,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "-",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 30,
+    "name": "short_reverse_10",
+    "kind": "reverse",
+    "start_0based": 11001,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "-",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 31,
+    "name": "short_reverse_11",
+    "kind": "reverse",
+    "start_0based": 8807,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "-",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 32,
+    "name": "short_reverse_12",
+    "kind": "reverse",
+    "start_0based": 6059,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "-",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 33,
+    "name": "short_reverse_13",
+    "kind": "reverse",
+    "start_0based": 3209,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "-",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 34,
+    "name": "short_reverse_14",
+    "kind": "reverse",
+    "start_0based": 12050,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "-",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 35,
+    "name": "short_reverse_15",
+    "kind": "reverse",
+    "start_0based": 1240,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "-",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 36,
+    "name": "short_reverse_16",
+    "kind": "reverse",
+    "start_0based": 12788,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "-",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 37,
+    "name": "short_reverse_17",
+    "kind": "reverse",
+    "start_0based": 0,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "-",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 38,
+    "name": "short_reverse_18",
+    "kind": "reverse",
+    "start_0based": 11607,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "-",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 39,
+    "name": "short_reverse_19",
+    "kind": "reverse",
+    "start_0based": 10708,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "-",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 40,
+    "name": "short_reverse_20",
+    "kind": "reverse",
+    "start_0based": 16030,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "-",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 41,
+    "name": "short_substitutions_01",
+    "kind": "substitutions",
+    "start_0based": 0,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "sub",
+        "offset": 148,
+        "base": "G"
+      }
+    ]
+  },
+  {
+    "group": "short",
+    "read_number": 42,
+    "name": "short_substitutions_02",
+    "kind": "substitutions",
+    "start_0based": 16419,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "sub",
+        "offset": 68,
+        "base": "G"
+      },
+      {
+        "op": "sub",
+        "offset": 139,
+        "base": "G"
+      }
+    ]
+  },
+  {
+    "group": "short",
+    "read_number": 43,
+    "name": "short_substitutions_03",
+    "kind": "substitutions",
+    "start_0based": 8208,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "sub",
+        "offset": 27,
+        "base": "G"
+      },
+      {
+        "op": "sub",
+        "offset": 34,
+        "base": "A"
+      },
+      {
+        "op": "sub",
+        "offset": 126,
+        "base": "C"
+      }
+    ]
+  },
+  {
+    "group": "short",
+    "read_number": 44,
+    "name": "short_substitutions_04",
+    "kind": "substitutions",
+    "start_0based": 7025,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "sub",
+        "offset": 96,
+        "base": "A"
+      }
+    ]
+  },
+  {
+    "group": "short",
+    "read_number": 45,
+    "name": "short_substitutions_05",
+    "kind": "substitutions",
+    "start_0based": 11428,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "sub",
+        "offset": 62,
+        "base": "C"
+      },
+      {
+        "op": "sub",
+        "offset": 79,
+        "base": "G"
+      }
+    ]
+  },
+  {
+    "group": "short",
+    "read_number": 46,
+    "name": "short_substitutions_06",
+    "kind": "substitutions",
+    "start_0based": 7877,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "sub",
+        "offset": 27,
+        "base": "G"
+      },
+      {
+        "op": "sub",
+        "offset": 65,
+        "base": "A"
+      },
+      {
+        "op": "sub",
+        "offset": 99,
+        "base": "T"
+      }
+    ]
+  },
+  {
+    "group": "short",
+    "read_number": 47,
+    "name": "short_substitutions_07",
+    "kind": "substitutions",
+    "start_0based": 13264,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "sub",
+        "offset": 42,
+        "base": "G"
+      }
+    ]
+  },
+  {
+    "group": "short",
+    "read_number": 48,
+    "name": "short_substitutions_08",
+    "kind": "substitutions",
+    "start_0based": 8845,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "sub",
+        "offset": 16,
+        "base": "T"
+      },
+      {
+        "op": "sub",
+        "offset": 133,
+        "base": "C"
+      }
+    ]
+  },
+  {
+    "group": "short",
+    "read_number": 49,
+    "name": "short_substitutions_09",
+    "kind": "substitutions",
+    "start_0based": 6242,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "sub",
+        "offset": 25,
+        "base": "G"
+      },
+      {
+        "op": "sub",
+        "offset": 86,
+        "base": "T"
+      },
+      {
+        "op": "sub",
+        "offset": 125,
+        "base": "A"
+      }
+    ]
+  },
+  {
+    "group": "short",
+    "read_number": 50,
+    "name": "short_substitutions_10",
+    "kind": "substitutions",
+    "start_0based": 9890,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "sub",
+        "offset": 147,
+        "base": "C"
+      }
+    ]
+  },
+  {
+    "group": "short",
+    "read_number": 51,
+    "name": "short_substitutions_11",
+    "kind": "substitutions",
+    "start_0based": 6452,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "sub",
+        "offset": 67,
+        "base": "C"
+      },
+      {
+        "op": "sub",
+        "offset": 97,
+        "base": "T"
+      }
+    ]
+  },
+  {
+    "group": "short",
+    "read_number": 52,
+    "name": "short_substitutions_12",
+    "kind": "substitutions",
+    "start_0based": 1571,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "sub",
+        "offset": 10,
+        "base": "T"
+      },
+      {
+        "op": "sub",
+        "offset": 82,
+        "base": "C"
+      },
+      {
+        "op": "sub",
+        "offset": 143,
+        "base": "T"
+      }
+    ]
+  },
+  {
+    "group": "short",
+    "read_number": 53,
+    "name": "short_substitutions_13",
+    "kind": "substitutions",
+    "start_0based": 14624,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "sub",
+        "offset": 38,
+        "base": "T"
+      }
+    ]
+  },
+  {
+    "group": "short",
+    "read_number": 54,
+    "name": "short_substitutions_14",
+    "kind": "substitutions",
+    "start_0based": 14021,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "sub",
+        "offset": 77,
+        "base": "C"
+      },
+      {
+        "op": "sub",
+        "offset": 126,
+        "base": "C"
+      }
+    ]
+  },
+  {
+    "group": "short",
+    "read_number": 55,
+    "name": "short_substitutions_15",
+    "kind": "substitutions",
+    "start_0based": 8665,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "sub",
+        "offset": 54,
+        "base": "A"
+      },
+      {
+        "op": "sub",
+        "offset": 63,
+        "base": "A"
+      },
+      {
+        "op": "sub",
+        "offset": 90,
+        "base": "C"
+      }
+    ]
+  },
+  {
+    "group": "short",
+    "read_number": 56,
+    "name": "short_substitutions_16",
+    "kind": "substitutions",
+    "start_0based": 4964,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "sub",
+        "offset": 30,
+        "base": "G"
+      }
+    ]
+  },
+  {
+    "group": "short",
+    "read_number": 57,
+    "name": "short_substitutions_17",
+    "kind": "substitutions",
+    "start_0based": 10019,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "sub",
+        "offset": 56,
+        "base": "A"
+      },
+      {
+        "op": "sub",
+        "offset": 64,
+        "base": "A"
+      }
+    ]
+  },
+  {
+    "group": "short",
+    "read_number": 58,
+    "name": "short_substitutions_18",
+    "kind": "substitutions",
+    "start_0based": 11223,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "sub",
+        "offset": 45,
+        "base": "A"
+      },
+      {
+        "op": "sub",
+        "offset": 48,
+        "base": "G"
+      },
+      {
+        "op": "sub",
+        "offset": 140,
+        "base": "T"
+      }
+    ]
+  },
+  {
+    "group": "short",
+    "read_number": 59,
+    "name": "short_substitutions_19",
+    "kind": "substitutions",
+    "start_0based": 582,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "sub",
+        "offset": 121,
+        "base": "A"
+      }
+    ]
+  },
+  {
+    "group": "short",
+    "read_number": 60,
+    "name": "short_substitutions_20",
+    "kind": "substitutions",
+    "start_0based": 5842,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "sub",
+        "offset": 72,
+        "base": "A"
+      },
+      {
+        "op": "sub",
+        "offset": 92,
+        "base": "C"
+      }
+    ]
+  },
+  {
+    "group": "short",
+    "read_number": 61,
+    "name": "short_negative_01",
+    "kind": "negative",
+    "start_0based": null,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 62,
+    "name": "short_negative_02",
+    "kind": "negative",
+    "start_0based": null,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 63,
+    "name": "short_negative_03",
+    "kind": "negative",
+    "start_0based": null,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 64,
+    "name": "short_negative_04",
+    "kind": "negative",
+    "start_0based": null,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 65,
+    "name": "short_negative_05",
+    "kind": "negative",
+    "start_0based": null,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 66,
+    "name": "short_negative_06",
+    "kind": "negative",
+    "start_0based": null,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 67,
+    "name": "short_negative_07",
+    "kind": "negative",
+    "start_0based": null,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 68,
+    "name": "short_negative_08",
+    "kind": "negative",
+    "start_0based": null,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 69,
+    "name": "short_negative_09",
+    "kind": "negative",
+    "start_0based": null,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 70,
+    "name": "short_negative_10",
+    "kind": "negative",
+    "start_0based": null,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 71,
+    "name": "short_negative_11",
+    "kind": "negative",
+    "start_0based": null,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 72,
+    "name": "short_negative_12",
+    "kind": "negative",
+    "start_0based": null,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 73,
+    "name": "short_negative_13",
+    "kind": "negative",
+    "start_0based": null,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 74,
+    "name": "short_negative_14",
+    "kind": "negative",
+    "start_0based": null,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 75,
+    "name": "short_negative_15",
+    "kind": "negative",
+    "start_0based": null,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 76,
+    "name": "short_negative_16",
+    "kind": "negative",
+    "start_0based": null,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 77,
+    "name": "short_negative_17",
+    "kind": "negative",
+    "start_0based": null,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 78,
+    "name": "short_negative_18",
+    "kind": "negative",
+    "start_0based": null,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 79,
+    "name": "short_negative_19",
+    "kind": "negative",
+    "start_0based": null,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "short",
+    "read_number": 80,
+    "name": "short_negative_20",
+    "kind": "negative",
+    "start_0based": null,
+    "reference_span": 150,
+    "query_length": 150,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "long",
+    "read_number": 1,
+    "name": "long_exact_01",
+    "kind": "exact",
+    "start_0based": 0,
+    "reference_span": 1000,
+    "query_length": 1000,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "long",
+    "read_number": 2,
+    "name": "long_exact_02",
+    "kind": "exact",
+    "start_0based": 15569,
+    "reference_span": 1000,
+    "query_length": 1000,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "long",
+    "read_number": 3,
+    "name": "long_exact_03",
+    "kind": "exact",
+    "start_0based": 10953,
+    "reference_span": 1000,
+    "query_length": 1000,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "long",
+    "read_number": 4,
+    "name": "long_exact_04",
+    "kind": "exact",
+    "start_0based": 3783,
+    "reference_span": 1000,
+    "query_length": 1000,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "long",
+    "read_number": 5,
+    "name": "long_exact_05",
+    "kind": "exact",
+    "start_0based": 13396,
+    "reference_span": 1000,
+    "query_length": 1000,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "long",
+    "read_number": 6,
+    "name": "long_exact_06",
+    "kind": "exact",
+    "start_0based": 1554,
+    "reference_span": 1000,
+    "query_length": 1000,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "long",
+    "read_number": 7,
+    "name": "long_exact_07",
+    "kind": "exact",
+    "start_0based": 1581,
+    "reference_span": 1000,
+    "query_length": 1000,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "long",
+    "read_number": 8,
+    "name": "long_exact_08",
+    "kind": "exact",
+    "start_0based": 14032,
+    "reference_span": 1000,
+    "query_length": 1000,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "long",
+    "read_number": 9,
+    "name": "long_exact_09",
+    "kind": "exact",
+    "start_0based": 7730,
+    "reference_span": 1000,
+    "query_length": 1000,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "long",
+    "read_number": 10,
+    "name": "long_exact_10",
+    "kind": "exact",
+    "start_0based": 3786,
+    "reference_span": 1000,
+    "query_length": 1000,
+    "strand": "+",
+    "edits": []
+  },
+  {
+    "group": "long",
+    "read_number": 11,
+    "name": "long_indels_01",
+    "kind": "indels",
+    "start_0based": 0,
+    "reference_span": 1000,
+    "query_length": 1000,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "del",
+        "offset": 101
+      },
+      {
+        "op": "del",
+        "offset": 213
+      },
+      {
+        "op": "del",
+        "offset": 262
+      },
+      {
+        "op": "del",
+        "offset": 309
+      },
+      {
+        "op": "del",
+        "offset": 354
+      },
+      {
+        "op": "del",
+        "offset": 374
+      },
+      {
+        "op": "del",
+        "offset": 532
+      },
+      {
+        "op": "del",
+        "offset": 614
+      },
+      {
+        "op": "del",
+        "offset": 738
+      },
+      {
+        "op": "del",
+        "offset": 773
+      },
+      {
+        "op": "ins",
+        "offset": 805,
+        "base": "T"
+      },
+      {
+        "op": "ins",
+        "offset": 847,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 851,
+        "base": "C"
+      },
+      {
+        "op": "ins",
+        "offset": 900,
+        "base": "T"
+      },
+      {
+        "op": "ins",
+        "offset": 918,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 922,
+        "base": "G"
+      },
+      {
+        "op": "ins",
+        "offset": 925,
+        "base": "C"
+      },
+      {
+        "op": "ins",
+        "offset": 926,
+        "base": "G"
+      },
+      {
+        "op": "ins",
+        "offset": 936,
+        "base": "C"
+      },
+      {
+        "op": "ins",
+        "offset": 960,
+        "base": "A"
+      }
+    ]
+  },
+  {
+    "group": "long",
+    "read_number": 12,
+    "name": "long_indels_02",
+    "kind": "indels",
+    "start_0based": 15569,
+    "reference_span": 1000,
+    "query_length": 1000,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "del",
+        "offset": 42
+      },
+      {
+        "op": "del",
+        "offset": 84
+      },
+      {
+        "op": "del",
+        "offset": 145
+      },
+      {
+        "op": "del",
+        "offset": 165
+      },
+      {
+        "op": "del",
+        "offset": 199
+      },
+      {
+        "op": "del",
+        "offset": 247
+      },
+      {
+        "op": "del",
+        "offset": 366
+      },
+      {
+        "op": "del",
+        "offset": 468
+      },
+      {
+        "op": "del",
+        "offset": 539
+      },
+      {
+        "op": "del",
+        "offset": 559
+      },
+      {
+        "op": "ins",
+        "offset": 563,
+        "base": "C"
+      },
+      {
+        "op": "ins",
+        "offset": 589,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 623,
+        "base": "G"
+      },
+      {
+        "op": "ins",
+        "offset": 626,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 684,
+        "base": "G"
+      },
+      {
+        "op": "ins",
+        "offset": 693,
+        "base": "G"
+      },
+      {
+        "op": "ins",
+        "offset": 698,
+        "base": "T"
+      },
+      {
+        "op": "ins",
+        "offset": 796,
+        "base": "G"
+      },
+      {
+        "op": "ins",
+        "offset": 924,
+        "base": "T"
+      },
+      {
+        "op": "ins",
+        "offset": 955,
+        "base": "C"
+      }
+    ]
+  },
+  {
+    "group": "long",
+    "read_number": 13,
+    "name": "long_indels_03",
+    "kind": "indels",
+    "start_0based": 10930,
+    "reference_span": 1000,
+    "query_length": 1000,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "del",
+        "offset": 52
+      },
+      {
+        "op": "del",
+        "offset": 108
+      },
+      {
+        "op": "del",
+        "offset": 131
+      },
+      {
+        "op": "del",
+        "offset": 184
+      },
+      {
+        "op": "del",
+        "offset": 239
+      },
+      {
+        "op": "del",
+        "offset": 298
+      },
+      {
+        "op": "del",
+        "offset": 301
+      },
+      {
+        "op": "del",
+        "offset": 398
+      },
+      {
+        "op": "del",
+        "offset": 403
+      },
+      {
+        "op": "del",
+        "offset": 412
+      },
+      {
+        "op": "ins",
+        "offset": 534,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 578,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 616,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 659,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 662,
+        "base": "C"
+      },
+      {
+        "op": "ins",
+        "offset": 704,
+        "base": "C"
+      },
+      {
+        "op": "ins",
+        "offset": 740,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 742,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 782,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 967,
+        "base": "G"
+      }
+    ]
+  },
+  {
+    "group": "long",
+    "read_number": 14,
+    "name": "long_indels_04",
+    "kind": "indels",
+    "start_0based": 6072,
+    "reference_span": 1000,
+    "query_length": 1000,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "del",
+        "offset": 102
+      },
+      {
+        "op": "del",
+        "offset": 104
+      },
+      {
+        "op": "del",
+        "offset": 115
+      },
+      {
+        "op": "del",
+        "offset": 126
+      },
+      {
+        "op": "del",
+        "offset": 141
+      },
+      {
+        "op": "del",
+        "offset": 384
+      },
+      {
+        "op": "del",
+        "offset": 445
+      },
+      {
+        "op": "del",
+        "offset": 507
+      },
+      {
+        "op": "del",
+        "offset": 589
+      },
+      {
+        "op": "del",
+        "offset": 635
+      },
+      {
+        "op": "ins",
+        "offset": 652,
+        "base": "T"
+      },
+      {
+        "op": "ins",
+        "offset": 663,
+        "base": "C"
+      },
+      {
+        "op": "ins",
+        "offset": 671,
+        "base": "T"
+      },
+      {
+        "op": "ins",
+        "offset": 679,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 732,
+        "base": "C"
+      },
+      {
+        "op": "ins",
+        "offset": 776,
+        "base": "T"
+      },
+      {
+        "op": "ins",
+        "offset": 862,
+        "base": "T"
+      },
+      {
+        "op": "ins",
+        "offset": 890,
+        "base": "G"
+      },
+      {
+        "op": "ins",
+        "offset": 954,
+        "base": "T"
+      },
+      {
+        "op": "ins",
+        "offset": 977,
+        "base": "G"
+      }
+    ]
+  },
+  {
+    "group": "long",
+    "read_number": 15,
+    "name": "long_indels_05",
+    "kind": "indels",
+    "start_0based": 14327,
+    "reference_span": 1000,
+    "query_length": 1000,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "del",
+        "offset": 105
+      },
+      {
+        "op": "del",
+        "offset": 254
+      },
+      {
+        "op": "del",
+        "offset": 331
+      },
+      {
+        "op": "del",
+        "offset": 335
+      },
+      {
+        "op": "del",
+        "offset": 384
+      },
+      {
+        "op": "del",
+        "offset": 426
+      },
+      {
+        "op": "del",
+        "offset": 506
+      },
+      {
+        "op": "del",
+        "offset": 531
+      },
+      {
+        "op": "del",
+        "offset": 551
+      },
+      {
+        "op": "del",
+        "offset": 561
+      },
+      {
+        "op": "ins",
+        "offset": 709,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 734,
+        "base": "G"
+      },
+      {
+        "op": "ins",
+        "offset": 754,
+        "base": "C"
+      },
+      {
+        "op": "ins",
+        "offset": 790,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 805,
+        "base": "G"
+      },
+      {
+        "op": "ins",
+        "offset": 862,
+        "base": "G"
+      },
+      {
+        "op": "ins",
+        "offset": 870,
+        "base": "T"
+      },
+      {
+        "op": "ins",
+        "offset": 883,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 886,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 941,
+        "base": "C"
+      }
+    ]
+  },
+  {
+    "group": "long",
+    "read_number": 16,
+    "name": "long_indels_06",
+    "kind": "indels",
+    "start_0based": 8490,
+    "reference_span": 1000,
+    "query_length": 1000,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "del",
+        "offset": 68
+      },
+      {
+        "op": "del",
+        "offset": 94
+      },
+      {
+        "op": "del",
+        "offset": 114
+      },
+      {
+        "op": "del",
+        "offset": 121
+      },
+      {
+        "op": "del",
+        "offset": 132
+      },
+      {
+        "op": "del",
+        "offset": 184
+      },
+      {
+        "op": "del",
+        "offset": 216
+      },
+      {
+        "op": "del",
+        "offset": 234
+      },
+      {
+        "op": "del",
+        "offset": 237
+      },
+      {
+        "op": "del",
+        "offset": 250
+      },
+      {
+        "op": "ins",
+        "offset": 265,
+        "base": "C"
+      },
+      {
+        "op": "ins",
+        "offset": 292,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 331,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 373,
+        "base": "C"
+      },
+      {
+        "op": "ins",
+        "offset": 550,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 580,
+        "base": "C"
+      },
+      {
+        "op": "ins",
+        "offset": 692,
+        "base": "T"
+      },
+      {
+        "op": "ins",
+        "offset": 774,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 949,
+        "base": "C"
+      },
+      {
+        "op": "ins",
+        "offset": 960,
+        "base": "C"
+      }
+    ]
+  },
+  {
+    "group": "long",
+    "read_number": 17,
+    "name": "long_indels_07",
+    "kind": "indels",
+    "start_0based": 12612,
+    "reference_span": 1000,
+    "query_length": 1000,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "del",
+        "offset": 138
+      },
+      {
+        "op": "del",
+        "offset": 146
+      },
+      {
+        "op": "del",
+        "offset": 199
+      },
+      {
+        "op": "del",
+        "offset": 229
+      },
+      {
+        "op": "del",
+        "offset": 294
+      },
+      {
+        "op": "del",
+        "offset": 447
+      },
+      {
+        "op": "del",
+        "offset": 568
+      },
+      {
+        "op": "del",
+        "offset": 588
+      },
+      {
+        "op": "del",
+        "offset": 613
+      },
+      {
+        "op": "del",
+        "offset": 616
+      },
+      {
+        "op": "ins",
+        "offset": 681,
+        "base": "G"
+      },
+      {
+        "op": "ins",
+        "offset": 715,
+        "base": "C"
+      },
+      {
+        "op": "ins",
+        "offset": 725,
+        "base": "T"
+      },
+      {
+        "op": "ins",
+        "offset": 731,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 745,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 891,
+        "base": "T"
+      },
+      {
+        "op": "ins",
+        "offset": 904,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 908,
+        "base": "G"
+      },
+      {
+        "op": "ins",
+        "offset": 926,
+        "base": "G"
+      },
+      {
+        "op": "ins",
+        "offset": 929,
+        "base": "A"
+      }
+    ]
+  },
+  {
+    "group": "long",
+    "read_number": 18,
+    "name": "long_indels_08",
+    "kind": "indels",
+    "start_0based": 4658,
+    "reference_span": 1000,
+    "query_length": 1000,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "del",
+        "offset": 251
+      },
+      {
+        "op": "del",
+        "offset": 261
+      },
+      {
+        "op": "del",
+        "offset": 371
+      },
+      {
+        "op": "del",
+        "offset": 378
+      },
+      {
+        "op": "del",
+        "offset": 396
+      },
+      {
+        "op": "del",
+        "offset": 452
+      },
+      {
+        "op": "del",
+        "offset": 517
+      },
+      {
+        "op": "del",
+        "offset": 531
+      },
+      {
+        "op": "del",
+        "offset": 544
+      },
+      {
+        "op": "del",
+        "offset": 592
+      },
+      {
+        "op": "ins",
+        "offset": 640,
+        "base": "C"
+      },
+      {
+        "op": "ins",
+        "offset": 708,
+        "base": "C"
+      },
+      {
+        "op": "ins",
+        "offset": 724,
+        "base": "T"
+      },
+      {
+        "op": "ins",
+        "offset": 773,
+        "base": "T"
+      },
+      {
+        "op": "ins",
+        "offset": 777,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 789,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 924,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 934,
+        "base": "T"
+      },
+      {
+        "op": "ins",
+        "offset": 976,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 977,
+        "base": "G"
+      }
+    ]
+  },
+  {
+    "group": "long",
+    "read_number": 19,
+    "name": "long_indels_09",
+    "kind": "indels",
+    "start_0based": 14256,
+    "reference_span": 1000,
+    "query_length": 1000,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "del",
+        "offset": 84
+      },
+      {
+        "op": "del",
+        "offset": 99
+      },
+      {
+        "op": "del",
+        "offset": 180
+      },
+      {
+        "op": "del",
+        "offset": 182
+      },
+      {
+        "op": "del",
+        "offset": 275
+      },
+      {
+        "op": "del",
+        "offset": 327
+      },
+      {
+        "op": "del",
+        "offset": 343
+      },
+      {
+        "op": "del",
+        "offset": 353
+      },
+      {
+        "op": "del",
+        "offset": 397
+      },
+      {
+        "op": "del",
+        "offset": 418
+      },
+      {
+        "op": "ins",
+        "offset": 459,
+        "base": "T"
+      },
+      {
+        "op": "ins",
+        "offset": 477,
+        "base": "C"
+      },
+      {
+        "op": "ins",
+        "offset": 644,
+        "base": "G"
+      },
+      {
+        "op": "ins",
+        "offset": 743,
+        "base": "G"
+      },
+      {
+        "op": "ins",
+        "offset": 770,
+        "base": "T"
+      },
+      {
+        "op": "ins",
+        "offset": 797,
+        "base": "C"
+      },
+      {
+        "op": "ins",
+        "offset": 836,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 855,
+        "base": "C"
+      },
+      {
+        "op": "ins",
+        "offset": 927,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 966,
+        "base": "T"
+      }
+    ]
+  },
+  {
+    "group": "long",
+    "read_number": 20,
+    "name": "long_indels_10",
+    "kind": "indels",
+    "start_0based": 9116,
+    "reference_span": 1000,
+    "query_length": 1000,
+    "strand": "+",
+    "edits": [
+      {
+        "op": "del",
+        "offset": 120
+      },
+      {
+        "op": "del",
+        "offset": 205
+      },
+      {
+        "op": "del",
+        "offset": 306
+      },
+      {
+        "op": "del",
+        "offset": 320
+      },
+      {
+        "op": "del",
+        "offset": 325
+      },
+      {
+        "op": "del",
+        "offset": 343
+      },
+      {
+        "op": "del",
+        "offset": 375
+      },
+      {
+        "op": "del",
+        "offset": 438
+      },
+      {
+        "op": "del",
+        "offset": 468
+      },
+      {
+        "op": "del",
+        "offset": 481
+      },
+      {
+        "op": "ins",
+        "offset": 490,
+        "base": "G"
+      },
+      {
+        "op": "ins",
+        "offset": 534,
+        "base": "G"
+      },
+      {
+        "op": "ins",
+        "offset": 728,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 772,
+        "base": "C"
+      },
+      {
+        "op": "ins",
+        "offset": 824,
+        "base": "T"
+      },
+      {
+        "op": "ins",
+        "offset": 832,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 862,
+        "base": "C"
+      },
+      {
+        "op": "ins",
+        "offset": 864,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 895,
+        "base": "A"
+      },
+      {
+        "op": "ins",
+        "offset": 957,
+        "base": "G"
+      }
+    ]
+  }
+]
