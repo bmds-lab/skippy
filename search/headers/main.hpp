@@ -38,6 +38,10 @@
 struct ReadInfo {
     size_t start;  // byte offset in blob where sequence begins
     size_t length; // number of bases
+    size_t nameStart = 0;
+    size_t nameLength = 0;
+    size_t qualityStart = 0;
+    size_t qualityLength = 0;
 };
 
 struct SpanStruct {

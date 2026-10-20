@@ -42,6 +42,18 @@ Search:
   -data reads.fasta -out_dir results
 ```
 
+For SAM output, add `-format sam`. This writes `reads.sam` instead of `reads.out`
+and automatically runs Smith–Waterman to produce alignment coordinates and
+CIGAR strings. SAM contains one primary or unmapped record per read, includes
+FASTQ qualities when present, and uses MAPQ 255 because Skippy does not estimate
+mapping quality. The current FASTA/FASTQ reader expects one sequence line per
+record (and one quality line for FASTQ). Paired-read SAM is not supported.
+
+```bash
+./skippy search -genome /path/to/GRCh38 -technology illumina \
+  -data reads.fastq -out_dir results -format sam
+```
+
 `-technology` selects the contract (`illumina`/`hifi` → subs;
 `pacbio`/`nanopore`/`ont` → indels) and a default error rate. Override with
 `-error_target`. See `./skippy search --help all` for the full flag set.

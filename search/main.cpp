@@ -71,6 +71,7 @@ bool SEED_STEP_SPECIFIED = false;
 int NUM_SEEDS = 0;
 bool NUM_SEEDS_SPECIFIED = false;
 bool PAIRED_READS = false;                // if false, disable mate rescue
+bool SAM_OUTPUT = false;
 bool DEBUG_COVERAGE = false;              // if true, dump per-read seeds/coverage to stderr
 bool BALANCED_MODE = false;               // if true, apply length-dependent secondary gate in getSW
 float IDENTITY_THRESHOLD = 0.63f;         // SW identity filter threshold (eq/read_len)
@@ -117,6 +118,9 @@ struct ChunkData {
 struct FileContext {
     SafeQueue<Result> writerQueue;
     std::thread writerThread;
+    std::vector<ReadInfo> samReads;
+    std::shared_ptr<char[]> samData;
+    bool writeFailed = false;
 
     size_t fileNum = 0;
     std::string outFilename;
@@ -304,14 +308,14 @@ bool isRegularFile(const std::string& path)
     return S_ISREG(pathStat.st_mode);
 }
 
-bool hasFastaExtension(const std::string& fileName)
+bool hasReadExtension(const std::string& fileName)
 {
-    std::vector<std::string> fastaExtensions = {".fasta", ".fa", ".fna"};
+    std::vector<std::string> readExtensions = {".fasta", ".fa", ".fna", ".fastq", ".fq"};
     std::string::size_type idx = fileName.find_last_of('.');
     if (idx != std::string::npos) {
         std::string extension = fileName.substr(idx);
-        return std::find(fastaExtensions.begin(), fastaExtensions.end(), extension) !=
-               fastaExtensions.end();
+        return std::find(readExtensions.begin(), readExtensions.end(), extension) !=
+               readExtensions.end();
     }
     return false;
 }
@@ -320,7 +324,7 @@ std::vector<std::string> getFileNames(const std::string& rootDir)
 {
     std::vector<std::string> fileNames;
 
-    if (isRegularFile(rootDir) && hasFastaExtension(rootDir)) {
+    if (isRegularFile(rootDir) && hasReadExtension(rootDir)) {
         fileNames.push_back(rootDir);
         return fileNames;
     }
@@ -340,7 +344,7 @@ std::vector<std::string> getFileNames(const std::string& rootDir)
             continue;
         }
 
-        if (isRegularFile(filePath) && hasFastaExtension(filePath)) {
+        if (isRegularFile(filePath) && hasReadExtension(filePath)) {
             fileNames.push_back(filePath);
         }
         else if (entry->d_type == DT_DIR) {
@@ -368,9 +372,57 @@ std::string getBaseName(const std::string& filePath)
     return baseName;
 }
 
-void writer(SafeQueue<Result>& queue, const std::string& filename, std::atomic<size_t>& totalReads,
-            size_t fileNum)
+static bool samCigarSpans(const std::string& cigar, size_t& querySpan, size_t& referenceSpan)
 {
+    querySpan = referenceSpan = 0;
+    size_t count = 0;
+    for (char op : cigar) {
+        if (op >= '0' && op <= '9') {
+            count = count * 10 + static_cast<size_t>(op - '0');
+            continue;
+        }
+        if (count == 0)
+            return false;
+        switch (op) {
+        case 'M':
+        case '=':
+        case 'X':
+            querySpan += count;
+            referenceSpan += count;
+            break;
+        case 'I':
+        case 'S':
+            querySpan += count;
+            break;
+        case 'D':
+        case 'N':
+            referenceSpan += count;
+            break;
+        case 'H':
+        case 'P':
+            break;
+        default:
+            return false;
+        }
+        count = 0;
+    }
+    return count == 0 && referenceSpan > 0;
+}
+
+static std::string samReferenceName(const std::string& header)
+{
+    std::string name = getFirstToken(header);
+    if (!name.empty() && name.front() == '>')
+        name.erase(0, 1);
+    return name;
+}
+
+void writer(FileContext& ctx, size_t genomeLength)
+{
+    auto& queue = ctx.writerQueue;
+    const auto& filename = ctx.outFilename;
+    auto& totalReads = ctx.totalReads;
+    const size_t fileNum = ctx.fileNum;
     std::map<uint32_t, Result> resultsMap;
     Result result;
 
@@ -418,30 +470,99 @@ void writer(SafeQueue<Result>& queue, const std::string& filename, std::atomic<s
     std::ofstream outFile(filename);
     if (!outFile.is_open()) {
         std::cerr << "Error opening file: " << filename << std::endl;
+        ctx.writeFailed = true;
+        logForFile(fileNum, "Error opening file: " + filename, true);
         return;
     }
 
     char buffer[1024];
     uint32_t writtenCount = 0;
 
-    for (const auto& [index, res] : resultsMap) {
-        std::string refID =
-            (res.refBegin > 0)
-                ? getFirstToken(ref_ID_Table.getValue(ref_ID_Table.query(res.refBegin)))
-                : "*";
+    if (SAM_OUTPUT) {
+        outFile << "@HD\tVN:1.6\tSO:unsorted\n";
+        for (auto it = ref_ID_Table.entries.begin(); it != ref_ID_Table.entries.end(); ++it) {
+            auto next = std::next(it);
+            size_t end = next == ref_ID_Table.entries.end() ? genomeLength : next->first;
+            outFile << "@SQ\tSN:" << samReferenceName(it->second) << "\tLN:" << end - it->first
+                    << '\n';
+        }
 
-        char statusChar =
-            missingMates.find(index) != missingMates.end() ? '=' : (res.revComp == 0 ? '>' : '<');
+        for (size_t index = 0; index < ctx.samReads.size(); ++index) {
+            const ReadInfo& ri = ctx.samReads[index];
+            const char* data = ctx.samData.get();
+            std::string name(data + ri.nameStart, ri.nameLength);
+            if (name.empty())
+                name = std::to_string(index + 1);
+            std::string sequence(data + ri.start, ri.length);
+            std::string quality = ri.qualityLength == ri.length
+                                      ? std::string(data + ri.qualityStart, ri.qualityLength)
+                                      : "*";
 
-        snprintf(buffer, sizeof(buffer), "%c %8u\t%s\t%8u\t%5.2f\t%s\n", statusChar,
-                 res.sampleIndex + 1, refID.c_str(),
-                 (res.refBegin > 0) ? (res.refBegin - ref_ID_Table.query(res.refBegin) + 1) : 0,
-                 res.score, res.cigar.c_str());
+            auto result = resultsMap.find(static_cast<uint32_t>(index));
+            bool mapped = result != resultsMap.end() && !result->second.cigar.empty() &&
+                          result->second.cigar != "*" && result->second.refBegin < genomeLength;
+            auto reference = ref_ID_Table.entries.end();
+            if (mapped) {
+                reference = ref_ID_Table.entries.upper_bound(result->second.refBegin);
+                if (reference == ref_ID_Table.entries.begin()) {
+                    mapped = false;
+                }
+                else {
+                    --reference;
+                    auto next = std::next(reference);
+                    const size_t end = next == ref_ID_Table.entries.end() ? genomeLength
+                                                                           : next->first;
+                    size_t querySpan = 0, referenceSpan = 0;
+                    mapped = samCigarSpans(result->second.cigar, querySpan, referenceSpan) &&
+                             querySpan == ri.length && referenceSpan <= end - result->second.refBegin;
+                }
+            }
 
-        outFile << buffer;
-        ++writtenCount;
+            if (mapped) {
+                const Result& res = result->second;
+                if (res.revComp) {
+                    sequence = reverseComplement(sequence);
+                    if (quality != "*")
+                        std::reverse(quality.begin(), quality.end());
+                }
+                outFile << name << '\t' << (res.revComp ? 16 : 0) << '\t'
+                        << samReferenceName(reference->second) << '\t'
+                        << (res.refBegin - reference->first + 1) << "\t255\t" << res.cigar
+                        << "\t*\t0\t0\t" << sequence << '\t' << quality << '\n';
+                ++writtenCount;
+            }
+            else {
+                outFile << name << "\t4\t*\t0\t0\t*\t*\t0\t0\t" << sequence << '\t'
+                        << quality << '\n';
+            }
+        }
+    }
+    else {
+        for (const auto& [index, res] : resultsMap) {
+            const bool missingMate = missingMates.count(index) != 0;
+            std::string refID = missingMate
+                                    ? "*"
+                                    : getFirstToken(ref_ID_Table.getValue(ref_ID_Table.query(res.refBegin)));
+
+            char statusChar = missingMates.find(index) != missingMates.end()
+                                  ? '='
+                                  : (res.revComp == 0 ? '>' : '<');
+
+            snprintf(buffer, sizeof(buffer), "%c %8u\t%s\t%8u\t%5.2f\t%s\n", statusChar,
+                     res.sampleIndex + 1, refID.c_str(),
+                     missingMate ? 0 : res.refBegin - ref_ID_Table.query(res.refBegin) + 1,
+                     res.score, res.cigar.c_str());
+
+            outFile << buffer;
+            ++writtenCount;
+        }
     }
     outFile.close();
+    if (!outFile) {
+        std::cerr << "Error writing file: " << filename << std::endl;
+        ctx.writeFailed = true;
+        logForFile(fileNum, "Error writing file: " + filename);
+    }
 
     const size_t tr = totalReads.load(std::memory_order_relaxed);
     logForFile(fileNum,
@@ -663,8 +784,7 @@ static std::shared_ptr<char[]> mmap_entire_file(const std::string& path, uint64_
 //   - FASTQ: expects records starting with '@' followed by a single sequence
 //   line,
 //            then a '+' line and a single quality line.
-// In both cases, we ONLY capture the sequence line and ignore all other
-// metadata.
+// SAM output also retains header and quality offsets in the mapped file.
 static void enqueue_fasta_or_fastq_streaming_chunks(const std::string& readsFile,
                                                     const std::shared_ptr<FileContext>& ctx,
                                                     uint64_t& fileSize, size_t fileNum,
@@ -678,6 +798,8 @@ static void enqueue_fasta_or_fastq_streaming_chunks(const std::string& readsFile
     }
 
     const char* data = data_ptr.get();
+    if (SAM_OUTPUT)
+        ctx->samData = data_ptr;
 
     logForFile(fileNum, "Streaming Samples: " + readsFile, false);
 
@@ -747,6 +869,10 @@ static void enqueue_fasta_or_fastq_streaming_chunks(const std::string& readsFile
         const char recType = data[pos];
 
         // Skip header line
+        const size_t nameStart = pos + 1;
+        size_t nameEnd = nameStart;
+        while (nameEnd < fileSize && !std::isspace(static_cast<unsigned char>(data[nameEnd])))
+            ++nameEnd;
         skip_to_eol();
 
         if (pos >= fileSize)
@@ -760,21 +886,31 @@ static void enqueue_fasta_or_fastq_streaming_chunks(const std::string& readsFile
         size_t seqLen = pos - seqStart;
         consume_eol();
 
-        if (seqLen > 0) {
-            batch.push_back({seqStart, seqLen});
-            if (batch.size() >= READS_PER_CHUNK)
-                flush_batch();
-        }
-
         // FASTQ: skip '+' line and quality line (single-line versions).
+        size_t qualityStart = 0, qualityLength = 0;
         if (recType == '@') {
             // Skip '+' line
             if (pos < fileSize)
                 skip_to_eol();
 
             // Skip quality line
-            if (pos < fileSize)
-                skip_to_eol();
+            if (pos < fileSize) {
+                qualityStart = pos;
+                while (pos < fileSize && data[pos] != '\n' && data[pos] != '\r')
+                    ++pos;
+                qualityLength = pos - qualityStart;
+                consume_eol();
+            }
+        }
+
+        if (seqLen > 0) {
+            ReadInfo info{seqStart, seqLen, nameStart, nameEnd - nameStart, qualityStart,
+                          qualityLength};
+            if (SAM_OUTPUT)
+                ctx->samReads.push_back(info);
+            batch.push_back(info);
+            if (batch.size() >= READS_PER_CHUNK)
+                flush_batch();
         }
     }
 
@@ -1550,8 +1686,9 @@ void initialiseSKIPPY(int argc, char* argv[])
         cout << "\nRequired:\n";
         cout << "  -genome <dir>          reference reference genome root "
                 "directory\n";
-        cout << "  -data <file>           input reads in FASTA format\n";
+        cout << "  -data <file>           input reads in FASTA or FASTQ format\n";
         cout << "  -out_dir <dir>         output directory\n";
+        cout << "  -format <out|sam>      output format (default: out)\n";
         cout << "\nTechnology (sets index, contract and error rate):\n";
         cout << "  -technology <tech>     illumina | hifi | pacbio | nanopore | "
                 "ont\n";
@@ -1587,7 +1724,7 @@ void initialiseSKIPPY(int argc, char* argv[])
                     "200)\n";
             cout << "  -num_seeds <n>              fix seeds per read (minimum 5)\n";
             cout << "  -sw <true|false>            compute SW alignment (default: "
-                    "false)\n";
+                    "false; enabled for SAM)\n";
             cout << "\nPower user flags (not shown in basic help):\n";
             cout << "  -@gate, -@cut_off, -@identity_threshold, -@suspicious_span\n";
             cout << "\nExamples:\n";
@@ -1660,7 +1797,7 @@ void initialiseSKIPPY(int argc, char* argv[])
             "-technology", "-error_target", "-cut_off", "-@gate", "-@cut_off",
             "-@identity_threshold", "-@suspicious_span", "-identity_threshold",
             "-suspicious_span", "-threads", "-reference", "-genome", "-stripe", "-data",
-            "-out_dir", "-match_all", "-sw", "-paired", "-debug_coverage", "-min_span",
+            "-out_dir", "-format", "-match_all", "-sw", "-paired", "-debug_coverage", "-min_span",
             "-min_density", "-min_matches_abs"};
         if (!valueOptions.count(arg)) {
             cerr << "Error: unknown search option: " << arg << '\n';
@@ -1835,6 +1972,13 @@ void initialiseSKIPPY(int argc, char* argv[])
             else if (arg == "-out_dir") {
                 OUTPUT_DIR = cleanArg(value);
             }
+            else if (arg == "-format") {
+                if (value != "out" && value != "sam") {
+                    cerr << "Error: -format must be out or sam\n";
+                    exit(2);
+                }
+                SAM_OUTPUT = (value == "sam");
+            }
             else if (arg == "-match_all") {
                 MATCH_ALL = (value == "true");
             }
@@ -1894,6 +2038,12 @@ void initialiseSKIPPY(int argc, char* argv[])
         cerr << "Error: invalid -contract value: " << CONTRACT_TYPE << " (expected subs or indels)\n";
         exit(2);
     }
+    if (SAM_OUTPUT && PAIRED_READS) {
+        cerr << "Error: paired SAM output is not supported\n";
+        exit(2);
+    }
+    if (SAM_OUTPUT)
+        GET_SW = true;
 
     kmer_encoding_table[(size_t)'A'] = 0;
     kmer_encoding_table[(size_t)'C'] = 1;
@@ -1935,6 +2085,7 @@ void initialiseSKIPPY(int argc, char* argv[])
     cout << "error_target: " << ERROR_TARGET_PCT << endl;
     cout << "data: " << READS << endl;
     cout << "output directory: " << OUTPUT_DIR << endl << endl;
+    cout << "output format: " << (SAM_OUTPUT ? "sam" : "out") << endl;
 #ifdef USE_ALIGNMENT_DENSITY
     cout << "min_alignment_span: " << MIN_ALIGNMENT_SPAN << endl;
     cout << "min_alignment_density: " << MIN_ALIGNMENT_DENSITY << endl;
@@ -2077,6 +2228,10 @@ int main(int argc, char* argv[])
     workQueue.setCapacity(static_cast<size_t>(THREADS) * 8);
 
     getReference(REFERENCE, innerMapBlob, outerMapBlob, genomeStr, MASK, ref_ID_Table);
+    if (SAM_OUTPUT && ref_ID_Table.entries.empty()) {
+        std::cerr << "Error: SAM output requires reference names in the index\n";
+        return 1;
+    }
 
     // -------------------------
     // Go to work now
@@ -2165,14 +2320,12 @@ int main(int argc, char* argv[])
                        std::to_string(fileNum) + " ******** processing " + filename + " ********");
 
             std::string baseFilename = getBaseFilename(filename);
-            ctx->outFilename = OUTPUT_DIR + "/" + baseFilename + ".out";
+            ctx->outFilename = OUTPUT_DIR + "/" + baseFilename + (SAM_OUTPUT ? ".sam" : ".out");
 
             logForFile(fileNum, "Results written to " + ctx->outFilename);
 
             // Start writer thread immediately (it blocks on writerQueue)
-            ctx->writerThread =
-                std::thread(writer, std::ref(ctx->writerQueue), std::ref(ctx->outFilename),
-                            std::ref(ctx->totalReads), fileNum);
+            ctx->writerThread = std::thread(writer, std::ref(*ctx), genomeStr.size());
 
             // Stream chunks into the global workQueue (mmap + incremental FASTA scan)
             uint64_t fileSize = 0;
@@ -2203,9 +2356,12 @@ int main(int argc, char* argv[])
 
     // Join all writers (they should have been released by remainingChunks hitting
     // 0)
+    bool writeFailed = false;
     for (auto& ctx : allFileContexts) {
         if (ctx && ctx->writerThread.joinable())
             ctx->writerThread.join();
+        if (ctx)
+            writeFailed |= ctx->writeFailed;
     }
 
     // Shutdown logging
@@ -2224,5 +2380,5 @@ int main(int argc, char* argv[])
 
     std::cout << "Total time: " << minutes << " min " << seconds << " sec" << std::endl;
 
-    return 0;
+    return writeFailed ? 1 : 0;
 }

@@ -49,6 +49,10 @@ def main() -> None:
         (["search", "-threads", "-data"], 2, "missing value for -threads"),
         (["search", "-data", "reads.fasta"], 2, "missing -genome"),
         (["search", "-technology", "unknown"], 2, "unknown technology"),
+        (["search", "-format", "bam"], 2, "-format must be out or sam"),
+        (["search", "-data", "reads.fasta", "-genome", "/no-such-genome",
+          "-format", "sam", "-paired", "true"], 2,
+         "paired SAM output is not supported"),
     ]:
         check(args, status, message, "stderr")
 
