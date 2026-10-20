@@ -12,6 +12,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <algorithm>
+#include <bit>
 #include <chrono>
 #include <climits>
 #include <cstdlib>
@@ -191,11 +193,18 @@ bool buildIndex(const std::string& fastaFile, const std::string& outputDir,
     auto start = std::chrono::steady_clock::now();
     uint32_t genomeSize;
     genome = load_genome_file(fastaFile, referenceIDMap, genomeSize);
+    const uint32_t minimumLength = static_cast<uint32_t>(std::max(32, pat.window));
+    if (genomeSize < minimumLength) {
+        std::cerr << "Error: reference must contain at least " << minimumLength
+                  << " sequence bases\n";
+        std::free(genome);
+        return false;
+    }
 
-    int numBitsToKeep = (int)::ceil(::log2(genomeSize));
+    int numBitsToKeep = std::bit_width(genomeSize - 1);
     MASK = (numBitsToKeep >= 32) ? UINT32_MAX : (uint32_t{1} << numBitsToKeep) - 1;
     std::cout << "Keeping " << numBitsToKeep << " bits in kmerHash\n";
-    std::vector<protected_vector<uint32_t>> kmersMap(pow(2, numBitsToKeep));
+    std::vector<protected_vector<uint32_t>> kmersMap(size_t{1} << numBitsToKeep);
 
     index_kmers(genome, genomeSize, kmersMap, MASK, pat, pat2);
 

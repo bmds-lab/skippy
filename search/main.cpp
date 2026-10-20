@@ -373,14 +373,12 @@ void writer(SafeQueue<Result>& queue, const std::string& filename, std::atomic<s
 {
     std::map<uint32_t, Result> resultsMap;
     Result result;
-    uint32_t originalResults = 0;
 
     while (true) {
         bool dequeued = queue.dequeue(result);
 
         if (dequeued) {
             resultsMap[result.sampleIndex] = result;
-            ++originalResults;
         }
 
         else if (queue.isFinished()) {
@@ -1705,14 +1703,16 @@ void initialiseSKIPPY(int argc, char* argv[])
                 SEED_STEP_SPECIFIED = true;
             }
             else if (arg == "-slack") {
-                INDEL_SLACK = std::stoi(value);
-                if (INDEL_SLACK < 0 || INDEL_SLACK > 30)
-                    INDEL_SLACK = 3;
+                const int slack = std::stoi(value);
+                INDEL_SLACK = (slack < 0 || slack > 30) ? 3u : static_cast<uint32_t>(slack);
             }
             else if (arg == "-gate") {
-                GATE_COVERAGE = std::stoi(value);
-                if (GATE_COVERAGE < (uint32_t)gPattern.weight)
-                    GATE_COVERAGE = 2 * (uint32_t)gPattern.weight;
+                const int gate = std::stoi(value);
+                if (gate < 0) {
+                    cerr << "Error: -gate must be nonnegative\n";
+                    exit(2);
+                }
+                GATE_COVERAGE = static_cast<uint32_t>(gate);
             }
 
             else if (arg == "-technology") {
@@ -2154,7 +2154,6 @@ int main(int argc, char* argv[])
     allFileContexts.reserve(fileNames.size());
 
     std::thread producer([&] {
-        constexpr size_t chunkSize = 500; // unchanged: number of reads per WorkItem
         for (size_t fileNum = 0; fileNum < fileNames.size(); ++fileNum) {
             const std::string& filename = fileNames[fileNum];
             auto ctx = std::make_shared<FileContext>();

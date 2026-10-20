@@ -41,6 +41,7 @@ def main() -> None:
         (["search", "-bogus"], 2, "unknown search option"),
         (["search", "-threads", "oops"], 2, "invalid value for -threads"),
         (["search", "-threads", "0"], 2, "-threads must be at least 1"),
+        (["search", "-gate", "-1"], 2, "-gate must be nonnegative"),
         (["search", "-threads", "-data"], 2, "missing value for -threads"),
         (["search", "-data", "reads.fasta"], 2, "missing -genome"),
         (["search", "-technology", "unknown"], 2, "unknown technology"),

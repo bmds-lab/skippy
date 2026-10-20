@@ -45,13 +45,19 @@ public:
 
     bool save(const std::string& filename) const
     {
+        if (!table_.empty() &&
+            (table_.size() != N_ERRORS ||
+             std::any_of(table_.begin(), table_.end(),
+                         [](const auto& row) { return row.size() != N_LENGTHS; })))
+            return false;
+
         std::ofstream out(filename, std::ios::binary);
 
         if (!out)
             return false;
 
-        int rows = table_.size();
-        int cols = rows ? table_[0].size() : 0;
+        int rows = table_.empty() ? 0 : N_ERRORS;
+        int cols = rows ? N_LENGTHS : 0;
 
         out.write((char*)&rows, sizeof(rows));
         out.write((char*)&cols, sizeof(cols));
@@ -75,6 +81,9 @@ public:
         in.read((char*)&cols, sizeof(cols));
 
         if (!in)
+            return false;
+
+        if ((rows != 0 || cols != 0) && (rows != N_ERRORS || cols != N_LENGTHS))
             return false;
 
         table_.assign(rows, std::vector<int>(cols));

@@ -22,33 +22,6 @@
 using namespace std;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Monotone non-increasing envelope (left to right).
-// Longer reads need <= seeds than shorter reads.
-// Unachievable cells (budget == maxSeeds+1 sentinel) are left unchanged.
-// ─────────────────────────────────────────────────────────────────────────────
-static void applyMonotoneEnvelope(vector<uint16_t>& row, const vector<int>& readLengths, int window)
-{
-    const int cols = (int)row.size();
-    uint16_t minSeen = 0;
-    bool found = false;
-
-    for (int c = 0; c < cols; c++) {
-        int maxS = readLengths[c] - window + 1;
-        if ((int)row[c] > maxS)
-            continue; // unachievable or pending — skip
-
-        if (!found) {
-            minSeen = row[c];
-            found = true;
-        }
-        else if (row[c] < minSeen)
-            minSeen = row[c];
-        else
-            row[c] = minSeen;
-    }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // Main entry point
 // ─────────────────────────────────────────────────────────────────────────────
 bool generateSeedMatrix(const StripePattern& pattern, PlacementStrategy strategy,

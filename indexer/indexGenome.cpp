@@ -52,15 +52,16 @@ char* read_entire_file(const char* filename, uint64_t& fileSize)
     fp = fopen(filename, "rb");
     if (fp != nullptr) {
         if (fstat(fileno(fp), &details) == 0) {
-            if (details.st_size != 0 || details.st_size > UINT32_MAX) {
-                contents = (char*)malloc(details.st_size + 1);
-                if (fread(contents, details.st_size, 1, fp) != 1) {
+            if (details.st_size > 0 && static_cast<uint64_t>(details.st_size) <= UINT32_MAX) {
+                const size_t size = static_cast<size_t>(details.st_size);
+                contents = (char*)malloc(size + 1);
+                if (contents == nullptr || fread(contents, size, 1, fp) != 1) {
                     free(contents);
                     contents = nullptr;
                 }
                 else {
-                    fileSize = details.st_size;
-                    contents[details.st_size] = '\0';
+                    fileSize = size;
+                    contents[size] = '\0';
                 }
             }
         }

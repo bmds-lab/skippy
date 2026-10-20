@@ -149,29 +149,10 @@ static void applySeed(GreedyState& state, int start, const vector<int>& careOffs
     state.remaining.erase(start);
 }
 
-static void displayProtectionRow(const GreedyState& state, int start)
-{
-    cout << "Seed " << setw(2) << (state.ordering.size() - 1) << " start=" << setw(2) << start
-         << " : ";
-
-    for (int i = 0; i < state.readLength; i++) {
-        if (state.protectable[i]) {
-            cout << state.protectCount[i];
-        }
-        else {
-            cout << '.';
-        }
-    }
-
-    cout << '\n';
-}
-
 vector<int> buildGreedyOrder(int readLength, int span, const vector<int>& careOffsets,
                              const vector<int>& protectOffsets)
 {
     GreedyState state = initialiseState(readLength, span, protectOffsets);
-
-    bool coverageCompletePrinted = false;
 
     while (!state.remaining.empty()) {
         bool coveragePhase = coverageIncomplete(state);
