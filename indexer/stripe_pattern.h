@@ -104,11 +104,24 @@ struct StripePattern {
         while (i < n) {
             if (isdigit((unsigned char)pat[i])) {
                 int run = 0;
-                while (i < n && isdigit((unsigned char)pat[i]))
-                    run = run * 10 + (pat[i++] - '0');
+                while (i < n && isdigit((unsigned char)pat[i])) {
+                    const int digit = pat[i++] - '0';
+                    if (run > (64 - digit) / 10) {
+                        std::cerr << "StripePattern: weight exceeds maximum of 64 in \"" << pat
+                                  << "\"\n";
+                        return false;
+                    }
+                    run = run * 10 + digit;
+                }
 
                 if (run <= 0) {
                     std::cerr << "StripePattern: zero-length care run in \"" << pat << "\"\n";
+                    return false;
+                }
+
+                if (weight + run > 64) {
+                    std::cerr << "StripePattern: weight exceeds maximum of 64 in \"" << pat
+                              << "\"\n";
                     return false;
                 }
 
