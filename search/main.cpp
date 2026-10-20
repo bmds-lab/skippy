@@ -1800,7 +1800,7 @@ void initialiseSKIPPY(int argc, char *argv[])
         bool fullHelp = (argc > 2 && std::string(argv[2]) == "all");
 
         cout << "\nSkippy -- fast probabilistic reference sequence detection and depletion\n";
-        cout << "\nUsage: skippy -genome <dir> -technology <tech> -data <reads.fasta> -out_dir <dir> [options]\n";
+        cout << "\nUsage: skippy search -genome <dir> -technology <tech> -data <reads.fasta> -out_dir <dir> [options]\n";
         cout << "\nRequired:\n";
         cout << "  -genome <dir>          reference reference genome root directory\n";
         cout << "  -data <file>           input reads in FASTA format\n";
@@ -1831,12 +1831,12 @@ void initialiseSKIPPY(int argc, char *argv[])
             cout << "\nPower user flags (not shown in basic help):\n";
             cout << "  -@gate, -@cut_off, -@identity_threshold, -@suspicious_span\n";
             cout << "\nExamples:\n";
-            cout << "  skippy -genome /data/GRCh38 -technology nanopore -data reads.fasta -out_dir results\n";
-            cout << "  skippy -genome /data/GRCh38 -technology nanopore -data reads.fasta -out_dir results --specificity\n";
+            cout << "  skippy search -genome /data/GRCh38 -technology nanopore -data reads.fasta -out_dir results\n";
+            cout << "  skippy search -genome /data/GRCh38 -technology nanopore -data reads.fasta -out_dir results --specificity\n";
         }
         else
         {
-            cout << "  For full options: skippy --help all\n";
+            cout << "  For full options: skippy search --help all\n";
         }
         cout << endl;
         exit(0);

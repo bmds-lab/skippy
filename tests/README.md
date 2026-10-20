@@ -4,7 +4,7 @@ Requires Python 3, make, and the C++ compiler. No pip packages or downloads.
 
 ```bash
 python3 -m tests.mito        # build, index, search, check
-python3 -m tests.mito search # rebuild search, reuse index, check
+python3 -m tests.mito search # rebuild skippy, reuse index, check
 python3 -m tests.mito check  # check existing results only
 python3 -m tests.test_mito   # fast checker self-test
 ```

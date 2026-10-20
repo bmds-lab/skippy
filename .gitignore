@@ -4,6 +4,8 @@
 *.so
 indexer/indexReference
 search/skippy
+skippy
+build/
 
 # Editor / OS
 *~

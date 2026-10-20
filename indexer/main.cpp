@@ -276,11 +276,11 @@ void buildIndex(const std::string &fastaFile,
 */
 void initialise(int argc, char *argv[])
 {
-    if ((argc <= 1) || strcmp(argv[1], "-help") == 0)
+    if ((argc <= 1) || strcmp(argv[1], "-help") == 0 || strcmp(argv[1], "--help") == 0)
     {
         std::cout << "Usage:\n";
-        std::cout << "  " << argv[0] << " -genome <dir> [-stripe <pattern>]\n";
-        std::cout << "  " << argv[0] << " -reference <fasta> [-stripe <pattern>]  (legacy)\n\n";
+        std::cout << "  " << "skippy index" << " -genome <dir> [-stripe <pattern>]\n";
+        std::cout << "  " << "skippy index" << " -reference <fasta> [-stripe <pattern>]  (legacy)\n\n";
         std::cout << "  -genome <dir>    Genome root directory, e.g. /data/genomes/GRCh38\n";
         std::cout << "                   FASTA: <dir>/<name>.fasta  (name = basename of dir)\n";
         std::cout << "                   Index: <dir>/<stripe>/\n";
@@ -288,8 +288,8 @@ void initialise(int argc, char *argv[])
         std::cout << "                   Default: plain\n";
         std::cout << "  -reference <f>   Legacy: full path to FASTA file\n\n";
         std::cout << "Examples:\n";
-        std::cout << "  " << argv[0] << " -genome /data/genomes/GRCh38 -stripe plain\n";
-        std::cout << "  " << argv[0] << " -genome /data/genomes/GRCh38 -stripe 4XX4XXX1XX3X4\n";
+        std::cout << "  " << "skippy index" << " -genome /data/genomes/GRCh38 -stripe plain\n";
+        std::cout << "  " << "skippy index" << " -genome /data/genomes/GRCh38 -stripe 4XX4XXX1XX3X4\n";
         exit(0);
     }
 
@@ -440,7 +440,7 @@ int main(int argc, char *argv[])
         }
 
         // 6. Build the requested index
-        std::cout << "indexReference parameters\n";
+        std::cout << "skippy index parameters\n";
         std::cout << "  Genome:  " << GENOME_DIR << "\n";
         std::cout << "  FASTA:   " << fastaFile  << "\n";
         std::cout << "  Stripe:  " << STRIPE_ARG << "\n";
@@ -457,7 +457,7 @@ int main(int argc, char *argv[])
         //--------------------------------------------------------------
         // Legacy -reference mode (unchanged behaviour)
         //--------------------------------------------------------------
-        std::cout << "indexReference run parameters\n";
+        std::cout << "skippy index run parameters\n";
         std::cout << "reference: " << REFERENCE << "\n";
         if (!STRIPE_ARG.empty() && !isPlain)
             gPattern.print();

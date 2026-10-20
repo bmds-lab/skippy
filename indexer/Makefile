@@ -31,7 +31,9 @@ OBJECTS = $(SOURCES:%.cpp=$(OBJECT_DIR)/%.o)
 # Executable name
 EXECUTABLE = indexReference
 
-all: $(EXECUTABLE)
+.PHONY: all
+all:
+	$(MAKE) -C ..
 
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o $@

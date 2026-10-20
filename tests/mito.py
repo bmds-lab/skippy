@@ -84,7 +84,7 @@ def _logged(
 
 
 def run() -> None:
-    """Builds both tools, creates a fresh index, and searches the fixed queries.
+    """Builds skippy, creates a fresh index, and searches the fixed queries.
 
     Raises:
         ValueError: An index directory already exists.
@@ -98,10 +98,10 @@ def run() -> None:
             'Index already exists. Move tests/data/mito/plain aside '
             'before rebuilding.'
         )
-    subprocess.run(['make', '-C', str(ROOT / 'indexer')], check=True)
+    subprocess.run(['make', '-C', str(ROOT)], check=True)
     RESULTS.mkdir(parents=True, exist_ok=True)
     _logged(
-        [ROOT / 'indexer/indexReference', '-genome', genome,
+        [ROOT / 'skippy', 'index', '-genome', genome,
          '-stripe', 'plain'],
         RESULTS / 'index.log',
     )
@@ -109,15 +109,13 @@ def run() -> None:
 
 
 def search() -> None:
-    """Builds search and runs the queries using a completed plain index."""
-    subprocess.run(
-        ['make', '-C', str(ROOT / 'search'), '-f', 'GNUmakefile'], check=True
-    )
+    """Builds skippy and runs the queries using a completed plain index."""
+    subprocess.run(['make', '-C', str(ROOT)], check=True)
     for group, technology in [('short', 'illumina'), ('long', 'ont')]:
         output = RESULTS / group
         output.mkdir(parents=True, exist_ok=True)
         _logged(
-            [ROOT / 'search/skippy', '-genome', DATA / 'mito',
+            [ROOT / 'skippy', 'search', '-genome', DATA / 'mito',
              '-stripe', 'plain', '-technology', technology,
              '-data', DATA / f'{group}_reads.fasta',
              '-out_dir', output],

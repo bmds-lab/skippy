@@ -49,7 +49,9 @@ endif
 # Executable name
 EXECUTABLE = skippy
 
-all: $(EXECUTABLE)
+.PHONY: all
+all:
+	$(MAKE) -C .. USE_EDLIB=$(USE_EDLIB)
 
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o $@
