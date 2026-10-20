@@ -193,7 +193,7 @@ bool buildIndex(const std::string& fastaFile, const std::string& outputDir,
     genome = load_genome_file(fastaFile, referenceIDMap, genomeSize);
 
     int numBitsToKeep = (int)::ceil(::log2(genomeSize));
-    MASK = (numBitsToKeep == 32) ? UINT32_MAX : (1 << numBitsToKeep) - 1;
+    MASK = (numBitsToKeep >= 32) ? UINT32_MAX : (uint32_t{1} << numBitsToKeep) - 1;
     std::cout << "Keeping " << numBitsToKeep << " bits in kmerHash\n";
     std::vector<protected_vector<uint32_t>> kmersMap(pow(2, numBitsToKeep));
 
@@ -207,8 +207,8 @@ bool buildIndex(const std::string& fastaFile, const std::string& outputDir,
 
     uint64_t kmerCount = genomeSize - pat.window;
     uint64_t kmersInMap = 0;
-    for (size_t i = 0; i < kmersMap.size(); i++)
-        if (!kmersMap[i].empty())
+    for (const auto& positions : kmersMap)
+        if (!positions.empty())
             kmersInMap++;
     std::cout << "Map size " << kmersMap.size() << ", kmersCount " << kmerCount << ", kmers in Map "
               << kmersInMap << "\n";

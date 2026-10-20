@@ -53,8 +53,8 @@ static constexpr int STRIPED_USED_INDICES[STRIPED_WEIGHT] = {
 inline bool encode_striped_2X3X2X4X2X3(const char* p, uint32_t& packed)
 {
     packed = 0;
-    for (int i = 0; i < STRIPED_WEIGHT; ++i) {
-        char base = (char)toupper((unsigned char)p[STRIPED_USED_INDICES[i]]);
+    for (int offset : STRIPED_USED_INDICES) {
+        char base = (char)toupper((unsigned char)p[offset]);
         uint32_t code;
 
         switch (base) {
@@ -97,8 +97,8 @@ inline bool encode_striped_2X3X2X4X2X3(const char* p, uint32_t& packed)
 inline bool encode_rc_striped_2X3X2X4X2X3(const char* p, uint32_t& packed)
 {
     packed = 0;
-    for (int i = 0; i < STRIPED_WEIGHT; ++i) {
-        const int forward_pos = (STRIPED_WINDOW_SIZE - 1) - STRIPED_USED_INDICES[i];
+    for (int offset : STRIPED_USED_INDICES) {
+        const int forward_pos = (STRIPED_WINDOW_SIZE - 1) - offset;
         char base = (char)toupper((unsigned char)p[forward_pos]);
 
         uint32_t code;

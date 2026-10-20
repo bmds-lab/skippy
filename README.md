@@ -72,6 +72,12 @@ git ls-files -z '*.c' '*.cpp' '*.h' '*.hpp' | xargs -0 clang-format -i
 To check formatting without changing files, replace `-i` with
 `--dry-run --Werror`.
 
+## Linting
+
+Run `make lint` with clang-tidy 23.1.0. The target uses the same C++20 flags and
+symbol renames as the build. It checks project code for analyzer findings,
+unnecessary copies, and focused modernization issues. Bundled SSW code is excluded.
+
 ## Small end-to-end test
 
 See [tests/README.md](tests/README.md) for a human mitochondrial reference,

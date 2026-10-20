@@ -10,6 +10,7 @@
 
 #include "indexGenome.hpp"
 
+#include <algorithm>
 #include <chrono>
 #include <iomanip>
 #include <iostream>
@@ -46,15 +47,16 @@ char* read_entire_file(const char* filename, uint64_t& fileSize)
 {
     FILE* fp;
     struct stat details;
-    char* contents = NULL;
+    char* contents = nullptr;
     fileSize = 0;
-    if ((fp = fopen(filename, "rb")) != NULL) {
+    fp = fopen(filename, "rb");
+    if (fp != nullptr) {
         if (fstat(fileno(fp), &details) == 0) {
             if (details.st_size != 0 || details.st_size > UINT32_MAX) {
                 contents = (char*)malloc(details.st_size + 1);
                 if (fread(contents, details.st_size, 1, fp) != 1) {
                     free(contents);
-                    contents = NULL;
+                    contents = nullptr;
                 }
                 else {
                     fileSize = details.st_size;
@@ -77,7 +79,7 @@ char* load_genome_file(const std::string& fastaFile,
     std::cout << "\nLoading References: " << fastaFile << "\n";
     uint64_t fileSize;
     char* genome = read_entire_file(fastaFile.c_str(), fileSize);
-    if (genome == NULL) {
+    if (genome == nullptr) {
         std::cerr << "Failed to read " << fastaFile << " - Either missing, or larger than 4GB\n";
         exit(1);
     }
@@ -162,9 +164,7 @@ void index_kmers_thread(char* genome, uint64_t offset, uint64_t genomeSize,
                 ncountdown = pos + 1;
 
         uint64_t pkmer = encode_kmer_2bit::pack_32mer(genome);
-        uint64_t remkp = encode_kmer_2bit::reverse_complement_32mer(pkmer);
         pkmer >>= 2;
-        remkp <<= 2;
         char* encode_pos = genome + 31;
 
         for (uint32_t pos = 0; pos < genomeSize; pos++) {
@@ -191,17 +191,18 @@ void index_kmers(char* genome, uint64_t genomeSize,
                  std::vector<protected_vector<uint32_t>>& kmersMap, uint32_t MASK,
                  const StripePattern& pat, const StripePattern& pat2)
 {
-    size_t thread_count = std::thread::hardware_concurrency();
+    size_t thread_count = std::max(1u, std::thread::hardware_concurrency());
     uint64_t chunk_size = genomeSize / thread_count;
     uint64_t start = 0;
 
     std::vector<std::thread> threads;
+    threads.reserve(thread_count - 1);
 
     std::cout << "Launching " << thread_count << " threads each with " << chunk_size << " pieces\n";
 
     for (size_t i = 0; i < thread_count - 1; i++) {
-        threads.push_back(std::thread(index_kmers_thread, genome, start, chunk_size,
-                                      std::ref(kmersMap), MASK, std::cref(pat), std::cref(pat2)));
+        threads.emplace_back(index_kmers_thread, genome, start, chunk_size, std::ref(kmersMap),
+                             MASK, std::cref(pat), std::cref(pat2));
         start += chunk_size;
     }
     index_kmers_thread(genome, start, genomeSize - start - 31, kmersMap, MASK, pat, pat2);

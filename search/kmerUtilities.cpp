@@ -27,6 +27,7 @@ uint32_t getSpan(const std::vector<uint32_t>& pos, uint32_t span)
     }
 
     std::vector<Span> spans;
+    spans.reserve(pos.size());
 
     for (const uint32_t p : pos) {
         spans.push_back({p, p + span - 1});
@@ -104,15 +105,16 @@ char* read_entire_file(const char* filename, uint64_t& fileSize)
 {
     FILE* fp;
     struct stat details;
-    char* contents = NULL;
+    char* contents = nullptr;
     fileSize = 0;
-    if ((fp = fopen(filename, "rb")) != NULL) {
+    fp = fopen(filename, "rb");
+    if (fp != nullptr) {
         if (fstat(fileno(fp), &details) == 0) {
             if (details.st_size != 0 || details.st_size > UINT32_MAX) {
                 contents = (char*)malloc(details.st_size);
                 if (fread(contents, details.st_size, 1, fp) != 1) {
                     free(contents);
-                    contents = NULL;
+                    contents = nullptr;
                 }
                 else {
                     fileSize = details.st_size;

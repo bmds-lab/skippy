@@ -14,8 +14,38 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <utility>
 
 #include "kmerUtilities.hpp"
+
+static std::pair<void*, size_t> mapReadOnly(const std::string& filename)
+{
+    int fd = open(filename.c_str(), O_RDONLY);
+    if (fd < 0) {
+        std::perror(filename.c_str());
+        std::exit(EXIT_FAILURE);
+    }
+
+    struct stat sb;
+    if (fstat(fd, &sb) != 0) {
+        std::perror(filename.c_str());
+        close(fd);
+        std::exit(EXIT_FAILURE);
+    }
+    if (sb.st_size == 0) {
+        close(fd);
+        return {nullptr, 0};
+    }
+
+    void* addr = mmap(nullptr, static_cast<size_t>(sb.st_size), PROT_READ, MAP_PRIVATE, fd, 0);
+    if (addr == MAP_FAILED) {
+        std::perror(filename.c_str());
+        close(fd);
+        std::exit(EXIT_FAILURE);
+    }
+    close(fd);
+    return {addr, static_cast<size_t>(sb.st_size)};
+}
 
 void serializeMap(const std::vector<std::vector<uint32_t>>& kmersMap,
                   const std::string& innerMapFilename, const std::string& outerMapFilename)
@@ -50,22 +80,12 @@ void serializeMap(const std::vector<std::vector<uint32_t>>& kmersMap,
 void deserializeMap(const std::string& innerMapFilename, const std::string& outerMapFilename,
                     std::span<uint32_t>& innerMapBlob, std::span<uint32_t>& outerMapBlob)
 {
-    int fd;
-    struct stat sb;
-    void* addr;
-    size_t length;
-    fd = open(innerMapFilename.c_str(), O_RDONLY);
-    fstat(fd, &sb);
-    length = sb.st_size;
-    addr = mmap(nullptr, length, PROT_READ, MAP_PRIVATE, fd, 0);
-    innerMapBlob = std::span<uint32_t>((uint32_t*)addr, length / sizeof(uint32_t));
-    close(fd);
-    fd = open(outerMapFilename.c_str(), O_RDONLY);
-    fstat(fd, &sb);
-    length = sb.st_size;
-    addr = mmap(nullptr, length, PROT_READ, MAP_PRIVATE, fd, 0);
-    outerMapBlob = std::span<uint32_t>((uint32_t*)addr, length / sizeof(uint32_t));
-    close(fd);
+    auto [inner, innerLength] = mapReadOnly(innerMapFilename);
+    innerMapBlob =
+        std::span<uint32_t>(static_cast<uint32_t*>(inner), innerLength / sizeof(uint32_t));
+    auto [outer, outerLength] = mapReadOnly(outerMapFilename);
+    outerMapBlob =
+        std::span<uint32_t>(static_cast<uint32_t*>(outer), outerLength / sizeof(uint32_t));
 }
 
 // Helper function to access the index
@@ -108,18 +128,8 @@ bool writeTextBlobToFile(const char* text, std::size_t length, const std::string
 
 std::span<char> readTextBlobFromFile(const std::string& filename)
 {
-    int fd;
-    struct stat sb;
-    void* addr;
-    size_t length;
-
-    fd = open(filename.c_str(), O_RDONLY);
-    fstat(fd, &sb);
-    length = sb.st_size;
-    addr = mmap(nullptr, length, PROT_READ, MAP_PRIVATE, fd, 0);
-    std::span<char> textBlob((char*)addr, length);
-    close(fd);
-    return textBlob;
+    auto [addr, length] = mapReadOnly(filename);
+    return std::span<char>(static_cast<char*>(addr), length);
     /*
         std::ifstream inputFile(filename, std::ios::binary | std::ios::ate);
         if (!inputFile.is_open()) {

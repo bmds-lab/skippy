@@ -1,5 +1,6 @@
 CXX ?= g++
 CXXFLAGS ?= -O3 -std=c++20 -pthread
+CLANG_TIDY ?= clang-tidy
 
 INDEX_SOURCES = main.cpp encode_kmer_2bit.cpp hash.cpp indexGenome.cpp \
     serialiseKmersMap.cpp packGenomeBlob.cpp generate_seed_matrix.cpp \
@@ -7,6 +8,8 @@ INDEX_SOURCES = main.cpp encode_kmer_2bit.cpp hash.cpp indexGenome.cpp \
     report_seed_matrix.cpp
 SEARCH_SOURCES = main.cpp kmerUtilities.cpp serialiseKmersMap.cpp \
     smithWaterman.cpp hash.cpp ssw_cpp.cpp findSpans.cpp SeedMatrix.cpp
+# ssw_cpp.cpp is bundled third-party code.
+LINT_SEARCH_SOURCES = $(filter-out ssw_cpp.cpp,$(SEARCH_SOURCES))
 
 INDEX_OBJECTS = $(patsubst %.cpp,build/indexer/%.o,$(INDEX_SOURCES))
 SEARCH_OBJECTS = $(patsubst %.cpp,build/search/%.o,$(SEARCH_SOURCES)) build/search/ssw.o
@@ -24,9 +27,10 @@ INDEX_DEFINES = $(foreach name,$(INDEX_RENAMES),-D$(name)=index_$(name))
 ifdef USE_EDLIB
 SEARCH_OBJECTS += build/search/alignSequences_edlib.o build/search/edlib.o
 SEARCH_FLAGS = -DUSE_EDLIB -Isearch/edlib-1.2.7/edlib/include
+LINT_SEARCH_SOURCES += alignSequences_edlib.cpp
 endif
 
-.PHONY: all clean test
+.PHONY: all clean test lint
 all: skippy
 
 skippy: main.cpp $(INDEX_OBJECTS) $(SEARCH_OBJECTS)
@@ -53,3 +57,13 @@ clean:
 test: skippy
 	python3 -m tests.test_cli
 	python3 -m tests.test_mito
+
+lint:
+	$(CLANG_TIDY) main.cpp -- $(CXXFLAGS)
+	@for source in $(addprefix indexer/,$(INDEX_SOURCES)); do \
+		$(CLANG_TIDY) "$$source" -- $(CXXFLAGS) $(INDEX_DEFINES) -Iindexer/headers || exit $$?; \
+	done
+	@for source in $(addprefix search/,$(LINT_SEARCH_SOURCES)); do \
+		$(CLANG_TIDY) "$$source" -- $(CXXFLAGS) $(SEARCH_FLAGS) -Dmain=search_main \
+			-Isearch/headers || exit $$?; \
+	done

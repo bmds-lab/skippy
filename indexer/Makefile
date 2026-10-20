@@ -1,7 +1,7 @@
 # Compiler and flags
 CC = g++
 #CFLAGS = -O3 -std=c++11 -g 
-CFLAGS = -O3 -std=c++17 -g -pthread
+CFLAGS = -O3 -std=c++20 -g -pthread
 #CFLAGS = -O3 -std=c++11 -g -fprofile-instr-generate -fcoverage-mapping
 #CFLAGS = -g -o -std=c++11
 

@@ -100,16 +100,12 @@ bool generateSeedMatrix(const StripePattern& pattern, PlacementStrategy strategy
 
     // ── Dispatch ALL cells to thread pool ────────────────────────────────
     // Workers pull cells from atomic counter — fully parallel, lock-free.
-    // Each worker peeks left in its row for warm start bounds:
+    // Each worker peeks left in its row for a warm start bound:
     //   - UINT16_MAX = pending (skip)
     //   - v <= maxS  = viable (use as hi upper bound)
-    //   - v > maxS   = unviable sentinel maxS+1 (use maxS as lo lower bound)
+    //   - v > maxS   = unviable sentinel maxS+1 (ignore)
     //
-    // No shared mutable state — workers only write their own cell.
-    // uint16_t reads/writes are atomic on x86.
-
-    // Pre-fill with UINT16_MAX (pending sentinel)
-    fill(matrix.begin(), matrix.end(), UINT16_MAX);
+    // Workers write separate cells; warm-start reads can overlap those writes.
 
     struct WorkItem {
         int r, c;
@@ -125,9 +121,8 @@ bool generateSeedMatrix(const StripePattern& pattern, PlacementStrategy strategy
     mutex printMutex;
 
     const int numThreads = max(1u, thread::hardware_concurrency());
-    const int minViable = max(3, (GATE_COVERAGE + pattern.weight - 1) / pattern.weight);
-
     vector<thread> workers;
+    workers.reserve(numThreads);
     for (int t = 0; t < numThreads; t++) {
         workers.emplace_back([&]() {
             while (true) {
@@ -140,12 +135,11 @@ bool generateSeedMatrix(const StripePattern& pattern, PlacementStrategy strategy
                 const double errorRate = errorRates[r];
                 const int maxSeeds = readLengths[c] - pattern.window + 1;
 
-                // Peek left for warm start bounds
-                int hiWarm = maxSeeds;  // default: full range
-                int loWarm = minViable; // default: minimum
-
+                // Peek left for a warm start bound
+                int hiWarm = maxSeeds; // default: full range
                 for (int cp = c - 1; cp >= 0; cp--) {
-                    uint16_t v = matrix[r * cols + cp];
+                    uint16_t v =
+                        atomic_ref<uint16_t>(matrix[r * cols + cp]).load(memory_order_relaxed);
                     if (v == UINT16_MAX)
                         continue; // pending — skip
 
@@ -153,10 +147,6 @@ bool generateSeedMatrix(const StripePattern& pattern, PlacementStrategy strategy
                     if ((int)v <= maxS) {
                         // Viable cell — use budget as upper bound
                         hiWarm = min(hiWarm, (int)v);
-                    }
-                    else {
-                        // Unviable cell — use maxS as lower bound
-                        loWarm = max(loWarm, maxS);
                     }
                     break; // stop at first non-pending cell
                 }
@@ -168,7 +158,8 @@ bool generateSeedMatrix(const StripePattern& pattern, PlacementStrategy strategy
                 // Store result — replaces UINT16_MAX pending sentinel
                 // budget <= maxSeeds: achievable
                 // budget == maxSeeds+1: unachievable sentinel
-                matrix[r * cols + c] = (uint16_t)budget;
+                atomic_ref<uint16_t>(matrix[r * cols + c])
+                    .store((uint16_t)budget, memory_order_relaxed);
 
                 int done = ++completedCells;
                 if ((done % 1000) == 0 || done == (int)work.size()) {

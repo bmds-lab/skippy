@@ -271,7 +271,7 @@ ConcurrentQueue<WorkItem> workQueue;
 std::string get_current_dir_name_custom()
 {
     char cwd[PATH_MAX];
-    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+    if (getcwd(cwd, sizeof(cwd)) != nullptr) {
         return std::string(cwd);
     }
     else {
@@ -282,7 +282,7 @@ std::string get_current_dir_name_custom()
 std::string getBaseFilename(const std::string& filePath)
 {
     std::size_t lastSlash = filePath.find_last_of("/\\");
-    std::size_t lastDot = filePath.find_last_of(".");
+    std::size_t lastDot = filePath.find_last_of('.');
     if (lastDot != std::string::npos && (lastSlash == std::string::npos || lastDot > lastSlash)) {
         return filePath.substr(lastSlash + 1, lastDot - lastSlash - 1);
     }
@@ -517,7 +517,7 @@ bool saveGreedyOrders(const std::string& filename)
     return true;
 }
 
-void getReference(std::string inputFile, std::span<uint32_t>& innerMapBlob,
+void getReference(const std::string& inputFile, std::span<uint32_t>& innerMapBlob,
                   std::span<uint32_t>& outerMapBlob, std::span<char>& genomeStr, uint32_t& MASK,
                   QueryTable& ref_ID_Table)
 {
@@ -573,6 +573,10 @@ void getReference(std::string inputFile, std::span<uint32_t>& innerMapBlob,
 
     auto start = std::chrono::steady_clock::now();
     genomeStr = readTextBlobFromFile(genomeFilename);
+    if (genomeStr.empty()) {
+        std::cerr << "Error: empty genome index: " << genomeFilename << '\n';
+        exit(1);
+    }
     logForFile(0, "genome length: " + std::to_string(genomeStr.size()));
     deserializeMap(innerMapFilename, outerMapFilename, innerMapBlob, outerMapBlob);
     logForFile(0, "outerBlob size: " + std::to_string(outerMapBlob.size()));
@@ -586,46 +590,16 @@ void getReference(std::string inputFile, std::span<uint32_t>& innerMapBlob,
                       std::to_string(seconds) + " sec");
 
     int numBitsToKeep = std::ceil(std::log2(genomeStr.size()));
-    if (numBitsToKeep == 32) {
+    if (numBitsToKeep >= 32) {
         MASK = UINT32_MAX;
     }
     else {
-        MASK = (1 << numBitsToKeep) - 1;
+        MASK = (uint32_t{1} << numBitsToKeep) - 1;
     }
 
     // After loading index and printing parameters:
 
     std::cout << "REFERENCE = " << REFERENCE << std::endl;
-    std::filesystem::path refPath(REFERENCE);
-
-    bool useIndels = (CONTRACT_TYPE == "indels");
-
-    std::string contractBase = refPath.stem().string();
-
-    std::string seedFile = (refPath.parent_path() / (contractBase + (useIndels ? "_indels" : "") +
-                                                     (useGreedy ? "_greedy" : "_skippy") + ".bin"))
-                               .string();
-
-    /*ERROR_TARGET_PCT
-    std::cerr
-        << "Loading seed table: "
-        << seedFile
-        << std::endl;
-
-        if (!gSeedMatrix.load(seedFile))
-        {
-            std::cerr
-            << "Failed to load "
-            << seedFile
-            << std::endl;
-            exit(1);
-        } else {
-            std::cerr
-                << "Successful load "
-                << seedFile
-                << std::endl;
-        }
-    */
     std::string greedyFile = getBaseName(inputFile) + "_greedy_order.bin";
 
     if (!loadGreedyOrders(greedyFile)) {
@@ -1195,11 +1169,6 @@ void findMatches(const std::span<char>& genomeStr, SafeQueue<Result>& queue, uin
     std::vector<ListStructPtr> kmerPositionsPtr;
     kmerPositionsPtr.reserve(MAX_SEEDS);
 
-    // For small genomes, hash k-mers before masking to ensure all bases
-    // contribute. For large genomes (all 32 bits used), skip hashing for
-    // performance.
-    const bool needsHashing = (MASK != UINT32_MAX);
-
     bool debug = false;
 
     for (size_t idx = 0; idx < chunk.size(); ++idx) {
@@ -1497,8 +1466,8 @@ void findMatches(const std::span<char>& genomeStr, SafeQueue<Result>& queue, uin
         // SINGLE getSW CALL (exactly once per read)
         // ------------------------------------------------------------
         oneCandidate.clear();
-        oneCandidate.push_back(std::make_tuple(static_cast<uint32_t>(idx), bestRefBegin,
-                                               bestCoverage, bestSpan, bestRevComp));
+        oneCandidate.emplace_back(static_cast<uint32_t>(idx), bestRefBegin, bestCoverage, bestSpan,
+                                  bestRevComp);
 
         int matchScore = 1;
         int mismatchScore = -1;
