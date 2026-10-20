@@ -51,17 +51,20 @@ static const std::vector<std::string> STRIPED_TECHS = {"illumina", "hifi"};
         WRITEMAPTOFILE()
         ----------------
 */
-void writeMapToFile(const std::string& filename,
+bool writeMapToFile(const std::string& filename,
                     const std::map<uint32_t, std::string>& referenceIDMap)
 {
     std::ofstream outFile(filename);
     if (!outFile) {
         std::cerr << "Error opening the file: " << filename << std::endl;
-        return;
+        return false;
     }
     for (const auto& entry : referenceIDMap)
         outFile << entry.first << " " << entry.second;
     outFile.close();
+    if (!outFile)
+        std::cerr << "Error writing the file: " << filename << '\n';
+    return static_cast<bool>(outFile);
 }
 
 /*
@@ -145,14 +148,14 @@ void updateSymlinks(const std::string& genomeDir, const std::string& stripeSubdi
         WRITEMETADATA()
         ---------------
 */
-void writeMetadata(const std::string& inputFile, const StripePattern& pat,
+bool writeMetadata(const std::string& inputFile, const StripePattern& pat,
                    const StripePattern& pat2, uint32_t genomeSize, int numBitsToKeep)
 {
     std::string metaFilename = getBaseName(inputFile) + "_meta.idx";
     std::ofstream meta(metaFilename);
     if (!meta) {
-        std::cerr << "Warning: could not write metadata to " << metaFilename << "\n";
-        return;
+        std::cerr << "Error: could not write metadata to " << metaFilename << "\n";
+        return false;
     }
     meta << "SKIPPY_VERSION=2\n";
     meta << "STRIPE_PATTERN=" << pat.pattern_str << "\n";
@@ -163,7 +166,12 @@ void writeMetadata(const std::string& inputFile, const StripePattern& pat,
     meta << "GENOME_SIZE=" << genomeSize << "\n";
     meta << "KEFF=" << numBitsToKeep << "\n";
     meta.close();
+    if (!meta) {
+        std::cerr << "Error: could not write metadata to " << metaFilename << "\n";
+        return false;
+    }
     std::cout << "Metadata written to " << metaFilename << "\n";
+    return true;
 }
 
 /*
@@ -172,7 +180,7 @@ void writeMetadata(const std::string& inputFile, const StripePattern& pat,
         Build the index for REFERENCE (FASTA path) into outputDir.
         outputDir is the full path to the stripe subdirectory.
 */
-void buildIndex(const std::string& fastaFile, const std::string& outputDir,
+bool buildIndex(const std::string& fastaFile, const std::string& outputDir,
                 const StripePattern& pat, const StripePattern& pat2)
 {
     std::map<uint32_t, std::string> referenceIDMap;
@@ -221,10 +229,14 @@ void buildIndex(const std::string& fastaFile, const std::string& outputDir,
     std::string refIDFilename = basePath + "_refID.idx";
 
     std::cout << "Serialising genome to " << genomeFilename << "\n";
-    writeTextBlobToFile(genome, genomeSize, genomeFilename);
+    if (!writeTextBlobToFile(genome, genomeSize, genomeFilename)) {
+        std::cerr << "Error: could not write " << genomeFilename << '\n';
+        return false;
+    }
 
     std::cout << "Serialising map to " << outerMapFilename << " and " << innerMapFilename << "\n";
-    serializeMap(kmersMap, innerMapFilename, outerMapFilename);
+    if (!serializeMap(kmersMap, innerMapFilename, outerMapFilename))
+        return false;
 
     end = std::chrono::steady_clock::now();
     duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
@@ -233,27 +245,32 @@ void buildIndex(const std::string& fastaFile, const std::string& outputDir,
     std::cout << "Serialising time: " << minutes << " min " << seconds << " sec\n";
 
     std::cout << "Serialising ReferenceIDMap\n";
-    writeMapToFile(refIDFilename, referenceIDMap);
+    if (!writeMapToFile(refIDFilename, referenceIDMap))
+        return false;
 
-    writeMetadata(basePath, pat, pat2, genomeSize, numBitsToKeep);
+    if (!writeMetadata(basePath, pat, pat2, genomeSize, numBitsToKeep))
+        return false;
 
     std::string greedyFile = basePath + "_greedy_order.bin";
     std::cout << "Generating greedy order table...\n";
     initialiseGreedyOrders(pat);
-    if (!saveGreedyOrders(greedyFile))
-        std::cerr << "Failed to write " << greedyFile << std::endl;
+    if (!saveGreedyOrders(greedyFile)) {
+        std::cerr << "Error: failed to write " << greedyFile << std::endl;
+        return false;
+    }
 
     std::cout << "Generating seed matrices...\n";
     constexpr int MATRIX_TRIALS = 10000;
     constexpr double TARGET_PROB = 0.999;
 
     std::cout << "SUBSTITUTION / GREEDY seed matrix...\n";
-    generateSeedMatrix(pat, PlacementStrategy::GREEDY, ErrorType::SUBSTITUTION, basePath,
-                       MATRIX_TRIALS, MAX_READ_LENGTH, MAX_ERROR_PCT, TARGET_PROB);
+    if (!generateSeedMatrix(pat, PlacementStrategy::GREEDY, ErrorType::SUBSTITUTION, basePath,
+                            MATRIX_TRIALS, MAX_READ_LENGTH, MAX_ERROR_PCT, TARGET_PROB))
+        return false;
 
     std::cout << "INDEL / GREEDY seed matrix...\n";
-    generateSeedMatrix(pat, PlacementStrategy::GREEDY, ErrorType::INDEL, basePath, MATRIX_TRIALS,
-                       MAX_READ_LENGTH, MAX_ERROR_PCT, TARGET_PROB);
+    return generateSeedMatrix(pat, PlacementStrategy::GREEDY, ErrorType::INDEL, basePath,
+                              MATRIX_TRIALS, MAX_READ_LENGTH, MAX_ERROR_PCT, TARGET_PROB);
 }
 
 /*
@@ -262,7 +279,11 @@ void buildIndex(const std::string& fastaFile, const std::string& outputDir,
 */
 void initialise(int argc, char* argv[])
 {
-    if ((argc <= 1) || strcmp(argv[1], "-help") == 0 || strcmp(argv[1], "--help") == 0) {
+    if (argc <= 1) {
+        std::cerr << "Error: specify -genome <dir> or -reference <fasta>; see skippy index --help\n";
+        exit(2);
+    }
+    if (strcmp(argv[1], "-help") == 0 || strcmp(argv[1], "--help") == 0) {
         std::cout << "Usage:\n";
         std::cout << "  skippy index -genome <dir> [-stripe <pattern>]\n";
         std::cout << "  skippy index -reference <fasta> [-stripe <pattern>]  "
@@ -275,7 +296,10 @@ void initialise(int argc, char* argv[])
         std::cout << "  -stripe <pat>    Stripe pattern, e.g. 4XX4XXX1XX3X4 or "
                      "plain (16-mer)\n";
         std::cout << "                   Default: plain\n";
+        std::cout << "  -stripe2 <pat>   Optional complementary stripe pattern\n";
         std::cout << "  -reference <f>   Legacy: full path to FASTA file\n\n";
+        std::cout << "  --help           Show this help\n";
+        std::cout << "  --version        Show version\n\n";
         std::cout << "Examples:\n";
         std::cout << "  skippy index -genome /data/genomes/GRCh38 -stripe plain\n";
         std::cout << "  skippy index -genome /data/genomes/GRCh38 -stripe "
@@ -292,9 +316,14 @@ void initialise(int argc, char* argv[])
             continue;
         }
 
-        if (i + 1 >= argc) {
-            std::cerr << "Error: Missing value for " << arg << " option.\n";
-            continue;
+        if (arg != "-genome" && arg != "-reference" && arg != "-stripe" &&
+            arg != "-stripe2") {
+            std::cerr << "Error: unknown index option: " << arg << '\n';
+            exit(2);
+        }
+        if (i + 1 >= argc || argv[i + 1][0] == '-') {
+            std::cerr << "Error: missing value for " << arg << "; see skippy index --help\n";
+            exit(2);
         }
         std::string value = argv[++i];
 
@@ -306,8 +335,6 @@ void initialise(int argc, char* argv[])
             STRIPE_ARG = value;
         else if (arg == "-stripe2")
             STRIPE_ARG2 = value;
-        else
-            std::cerr << "Error: Unknown option: " << arg << "\n";
     }
 
     // Default stripe = plain
@@ -319,7 +346,7 @@ void initialise(int argc, char* argv[])
     if (!isPlain) {
         if (!gPattern.parse(STRIPE_ARG)) {
             std::cerr << "Fatal: invalid stripe pattern \"" << STRIPE_ARG << "\"\n";
-            exit(1);
+            exit(2);
         }
     }
     else {
@@ -333,12 +360,12 @@ void initialise(int argc, char* argv[])
     if (!STRIPE_ARG2.empty()) {
         if (!gPattern2.parse(STRIPE_ARG2)) {
             std::cerr << "Fatal: invalid stripe pattern2 \"" << STRIPE_ARG2 << "\"\n";
-            exit(1);
+            exit(2);
         }
         if (gPattern2.weight != gPattern.weight) {
             std::cerr << "Fatal: stripe2 weight (" << gPattern2.weight
                       << ") must match stripe weight (" << gPattern.weight << ")\n";
-            exit(1);
+            exit(2);
         }
     }
 }
@@ -399,7 +426,8 @@ int main(int argc, char* argv[])
                 }
                 StripePattern plainPat;
                 plainPat.parse("16");
-                buildIndex(fastaFile, plainDir, plainPat, StripePattern{});
+                if (!buildIndex(fastaFile, plainDir, plainPat, StripePattern{}))
+                    return 1;
                 updateSymlinks(GENOME_DIR, "plain", true);
                 std::cout << "\nPlain index built. Now building " << STRIPE_ARG << " index...\n\n";
             }
@@ -419,7 +447,8 @@ int main(int argc, char* argv[])
         std::cout << "  Index:   " << indexDir << "\n\n";
         gPattern.print();
 
-        buildIndex(fastaFile, indexDir, gPattern, gPattern2);
+        if (!buildIndex(fastaFile, indexDir, gPattern, gPattern2))
+            return 1;
 
         // 7. Update symlinks
         updateSymlinks(GENOME_DIR, stripeSubdir, isPlain);
@@ -428,6 +457,10 @@ int main(int argc, char* argv[])
         //--------------------------------------------------------------
         // Legacy -reference mode (unchanged behaviour)
         //--------------------------------------------------------------
+        if (!fileExists(REFERENCE)) {
+            std::cerr << "Error: reference FASTA not found: " << REFERENCE << '\n';
+            return 1;
+        }
         std::cout << "skippy index run parameters\n";
         std::cout << "reference: " << REFERENCE << "\n";
         if (!STRIPE_ARG.empty() && !isPlain)
@@ -437,11 +470,12 @@ int main(int argc, char* argv[])
 
         // In legacy mode, output goes alongside the FASTA file
         std::string outputDir = REFERENCE.substr(0, REFERENCE.find_last_of("/\\"));
-        buildIndex(REFERENCE, outputDir, gPattern, gPattern2);
+        if (!buildIndex(REFERENCE, outputDir, gPattern, gPattern2))
+            return 1;
     }
     else {
-        std::cerr << "Error: specify -genome <dir> or -reference <fasta>\n";
-        return 1;
+        std::cerr << "Error: specify -genome <dir> or -reference <fasta>; see skippy index --help\n";
+        return 2;
     }
 
     auto endAll = std::chrono::steady_clock::now();

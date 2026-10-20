@@ -83,5 +83,6 @@ bool saveGreedyOrders(const std::string& filename)
         }
     }
 
-    return true;
+    out.close();
+    return static_cast<bool>(out);
 }

@@ -12,6 +12,10 @@ make
 
 Produces one executable, `./skippy`, with `index` and `search` subcommands.
 
+Use `./skippy --help`, `./skippy index --help`, or `./skippy search --help`
+for command options. `--version` works at each level. Commands exit with 0 on
+success, 2 for invalid command-line arguments, and 1 for runtime failures.
+
 ## Usage
 
 Both tools use a genome-directory layout. A genome root holds

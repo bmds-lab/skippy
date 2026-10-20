@@ -17,7 +17,7 @@
 
 #include "protected_vector.hpp"
 
-void serializeMap(std::vector<protected_vector<uint32_t>>& kmersMap,
+bool serializeMap(std::vector<protected_vector<uint32_t>>& kmersMap,
                   const std::string& innerMapFilename, const std::string& outerMapFilename);
 void deserializeMap(const std::string& innerMapFilename, const std::string& outerMapFilename,
                     std::vector<uint32_t>& innerMapBlob, std::vector<uint32_t>& outerMapBlob,

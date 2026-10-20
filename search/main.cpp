@@ -527,6 +527,13 @@ void getReference(std::string inputFile, std::span<uint32_t>& innerMapBlob,
     std::string refIDFilename = getBaseName(inputFile) + "_refID.idx";
     std::string metaFilename = getBaseName(inputFile) + "_meta.idx";
 
+    for (const auto& path : {innerMapFilename, outerMapFilename, genomeFilename, refIDFilename}) {
+        struct stat st;
+        if (stat(path.c_str(), &st) != 0 || !S_ISREG(st.st_mode)) {
+            cerr << "Error: index file not found: " << path << '\n';
+            exit(1);
+        }
+    }
 
     // ------------------------------------------------------------
     // Load stripe pattern from metadata file
@@ -1559,10 +1566,14 @@ static std::string cleanArg(const std::string& s)
 void initialiseSKIPPY(int argc, char* argv[])
 {
     std::string arg;
+    if (argc == 1) {
+        cerr << "Error: missing search options; see skippy search --help\n";
+        exit(2);
+    }
     if (argc > 1) {
         arg = argv[1];
     }
-    if ((argc == 1) || arg == "-help" || arg == "--help") {
+    if (arg == "-help" || arg == "--help") {
         bool fullHelp = (argc > 2 && std::string(argv[2]) == "all");
 
         cout << "\nSkippy -- fast probabilistic reference sequence detection and "
@@ -1587,6 +1598,8 @@ void initialiseSKIPPY(int argc, char* argv[])
                 "(%)\n";
         cout << "  -threads <n>           number of threads (default: all "
                 "available)\n";
+        cout << "  --help                 show this help\n";
+        cout << "  --version              show version\n";
 
         if (fullHelp) {
             cout << "\nIndex and contract:\n";
@@ -1675,205 +1688,243 @@ void initialiseSKIPPY(int argc, char* argv[])
             BALANCED_MODE = true;
             continue;
         }
+        static const std::set<std::string> valueOptions = {
+            "-min_matches", "-contract", "-num_seeds", "-seed_step", "-slack", "-gate",
+            "-technology", "-error_target", "-cut_off", "-@gate", "-@cut_off",
+            "-@identity_threshold", "-@suspicious_span", "-identity_threshold",
+            "-suspicious_span", "-threads", "-reference", "-genome", "-stripe", "-data",
+            "-out_dir", "-match_all", "-sw", "-paired", "-debug_coverage", "-min_span",
+            "-min_density", "-min_matches_abs"};
+        if (!valueOptions.count(arg)) {
+            cerr << "Error: unknown search option: " << arg << '\n';
+            exit(2);
+        }
         /* --------------------------------------*/
-        if (i + 1 >= argc) {
-            std::cout << "Error: Missing value for " << arg << " option." << std::endl;
-            continue;
+        if (i + 1 >= argc ||
+            (argv[i + 1][0] == '-' && (argv[i + 1][1] < '0' || argv[i + 1][1] > '9'))) {
+            cerr << "Error: missing value for " << arg << "; see skippy search --help\n";
+            exit(2);
         }
 
         std::string value = argv[i + 1];
         ++i;
 
-        if (arg == "-min_matches") {
-            MIN_MATCHES = std::stoi(value);
-            if (MIN_MATCHES < 2)
-                MIN_MATCHES = 2;
-        }
-        else if (arg == "-contract") {
-            CONTRACT_TYPE = cleanArg(value);
-            CONTRACT_SPECIFIED = true;
-            std::cerr << "DEBUG: -contract set to '" << CONTRACT_TYPE << "'\n";
-        }
-        else if (arg == "-num_seeds") {
-            NUM_SEEDS = std::stoi(value);
-            if (NUM_SEEDS < 5) {
-                std::cerr << "WARNING: -num_seeds " << NUM_SEEDS
-                          << " is below minimum of 5. Using 5.\n";
-                NUM_SEEDS = 5;
+        try {
+            if (arg == "-min_matches") {
+                MIN_MATCHES = std::stoi(value);
+                if (MIN_MATCHES < 2)
+                    MIN_MATCHES = 2;
             }
-            NUM_SEEDS_SPECIFIED = true;
-        }
-        else if (arg == "-seed_step") {
-            SEED_STEP = std::stoi(value);
-            if (SEED_STEP < 1)
-                SEED_STEP = 1;
-            SEED_STEP_SPECIFIED = true;
-        }
-        else if (arg == "-slack") {
-            INDEL_SLACK = std::stoi(value);
-            if (INDEL_SLACK < 0 || INDEL_SLACK > 30)
-                INDEL_SLACK = 3;
-        }
-        else if (arg == "-gate") {
-            GATE_COVERAGE = std::stoi(value);
-            if (GATE_COVERAGE < (uint32_t)gPattern.weight)
-                GATE_COVERAGE = 2 * (uint32_t)gPattern.weight;
-        }
+            else if (arg == "-contract") {
+                CONTRACT_TYPE = cleanArg(value);
+                CONTRACT_SPECIFIED = true;
+                std::cerr << "DEBUG: -contract set to '" << CONTRACT_TYPE << "'\n";
+            }
+            else if (arg == "-num_seeds") {
+                NUM_SEEDS = std::stoi(value);
+                if (NUM_SEEDS < 5) {
+                    std::cerr << "WARNING: -num_seeds " << NUM_SEEDS
+                              << " is below minimum of 5. Using 5.\n";
+                    NUM_SEEDS = 5;
+                }
+                NUM_SEEDS_SPECIFIED = true;
+            }
+            else if (arg == "-seed_step") {
+                SEED_STEP = std::stoi(value);
+                if (SEED_STEP < 1)
+                    SEED_STEP = 1;
+                SEED_STEP_SPECIFIED = true;
+            }
+            else if (arg == "-slack") {
+                INDEL_SLACK = std::stoi(value);
+                if (INDEL_SLACK < 0 || INDEL_SLACK > 30)
+                    INDEL_SLACK = 3;
+            }
+            else if (arg == "-gate") {
+                GATE_COVERAGE = std::stoi(value);
+                if (GATE_COVERAGE < (uint32_t)gPattern.weight)
+                    GATE_COVERAGE = 2 * (uint32_t)gPattern.weight;
+            }
 
-        else if (arg == "-technology") {
-            TECHNOLOGY_NAME = cleanArg(value);
-            std::transform(TECHNOLOGY_NAME.begin(), TECHNOLOGY_NAME.end(), TECHNOLOGY_NAME.begin(),
-                           ::tolower);
-            if (TECHNOLOGY_NAME == "illumina")
-                ERROR_TARGET_PCT = 6;
-            else if (TECHNOLOGY_NAME == "hifi")
-                ERROR_TARGET_PCT = 6;
-            else if (TECHNOLOGY_NAME == "pacbio")
-                ERROR_TARGET_PCT = 15;
-            else if (TECHNOLOGY_NAME == "nanopore")
-                ERROR_TARGET_PCT = 15;
-            else if (TECHNOLOGY_NAME == "ont")
-                ERROR_TARGET_PCT = 15;
-            else {
-            std::cerr << "WARNING: Unknown technology '" << TECHNOLOGY_NAME
-                      << "'. Valid: illumina, hifi, pacbio, nanopore, ont\n"
-                      << "         Using default sequencing error rate=" << ERROR_TARGET_PCT
-                      << "%\n";
-            TECHNOLOGY_NAME = "";
-            }
-            TECHNOLOGY_SPECIFIED = true;
+            else if (arg == "-technology") {
+                TECHNOLOGY_NAME = cleanArg(value);
+                std::transform(TECHNOLOGY_NAME.begin(), TECHNOLOGY_NAME.end(), TECHNOLOGY_NAME.begin(),
+                               ::tolower);
+                if (TECHNOLOGY_NAME == "illumina")
+                    ERROR_TARGET_PCT = 6;
+                else if (TECHNOLOGY_NAME == "hifi")
+                    ERROR_TARGET_PCT = 6;
+                else if (TECHNOLOGY_NAME == "pacbio")
+                    ERROR_TARGET_PCT = 15;
+                else if (TECHNOLOGY_NAME == "nanopore")
+                    ERROR_TARGET_PCT = 15;
+                else if (TECHNOLOGY_NAME == "ont")
+                    ERROR_TARGET_PCT = 15;
+                else {
+                    cerr << "Error: unknown technology '" << TECHNOLOGY_NAME
+                         << "'; expected illumina, hifi, pacbio, nanopore, or ont\n";
+                    exit(2);
+                }
+                TECHNOLOGY_SPECIFIED = true;
 
-            if (TECHNOLOGY_NAME == "illumina") {
-                CONTRACT_TYPE = "subs";
+                if (TECHNOLOGY_NAME == "illumina") {
+                    CONTRACT_TYPE = "subs";
+                }
+                else if (TECHNOLOGY_NAME == "hifi") {
+                    CONTRACT_TYPE = "subs";
+                }
+                else if (TECHNOLOGY_NAME == "pacbio") {
+                    CONTRACT_TYPE = "indels";
+                }
+                else if (TECHNOLOGY_NAME == "nanopore") {
+                    CONTRACT_TYPE = "indels";
+                }
+                else if (TECHNOLOGY_NAME == "ont") {
+                    CONTRACT_TYPE = "indels";
+                }
             }
-            else if (TECHNOLOGY_NAME == "hifi") {
-                CONTRACT_TYPE = "subs";
+            else if (arg == "-error_target") {
+                ERROR_TARGET_PCT = std::stoi(value);
+                if (TECHNOLOGY_SPECIFIED) {
+                    std::cerr << "WARNING: -error_target " << value
+                              << " overrides the default error target set by -technology "
+                              << TECHNOLOGY_NAME << " (" << ERROR_TARGET_PCT << "%).\n";
+                }
+                ERROR_TARGET_SPECIFIED = true;
             }
-            else if (TECHNOLOGY_NAME == "pacbio") {
-                CONTRACT_TYPE = "indels";
+            else if (arg == "-cut_off") {
+                CUTOFF = std::stoi(value);
+                if (CUTOFF > 100)
+                    CUTOFF = 100;
+                else if (CUTOFF < 0)
+                    CUTOFF = 0;
             }
-            else if (TECHNOLOGY_NAME == "nanopore") {
-                CONTRACT_TYPE = "indels";
+            else if (arg == "-@gate") {
+                GATE_COVERAGE = std::stoi(value);
             }
-            else if (TECHNOLOGY_NAME == "ont") {
-                CONTRACT_TYPE = "indels";
+            else if (arg == "-@cut_off") {
+                CUTOFF = std::stoi(value);
             }
-        }
-        else if (arg == "-error_target") {
-            ERROR_TARGET_PCT = std::stoi(value);
-            if (TECHNOLOGY_SPECIFIED) {
-                std::cerr << "WARNING: -error_target " << value
-                          << " overrides the default error target set by -technology "
-                          << TECHNOLOGY_NAME << " (" << ERROR_TARGET_PCT << "%).\n";
+            else if (arg == "-@identity_threshold") {
+                IDENTITY_THRESHOLD = std::stof(value);
             }
-            ERROR_TARGET_SPECIFIED = true;
-        }
-        else if (arg == "-cut_off") {
-            CUTOFF = std::stoi(value);
-            if (CUTOFF > 100)
-                CUTOFF = 100;
-            else if (CUTOFF < 0)
-                CUTOFF = 0;
-        }
-        else if (arg == "-@gate") {
-            GATE_COVERAGE = std::stoi(value);
-        }
-        else if (arg == "-@cut_off") {
-            CUTOFF = std::stoi(value);
-        }
-        else if (arg == "-@identity_threshold") {
-            IDENTITY_THRESHOLD = std::stof(value);
-        }
-        else if (arg == "-@suspicious_span") {
-            SUSPICIOUS_SPAN_THRESHOLD = static_cast<uint32_t>(std::stoi(value));
-        }
-        else if (arg == "-identity_threshold") {
-            IDENTITY_THRESHOLD = std::stof(value);
-            if (IDENTITY_THRESHOLD > 1.0f)
-                IDENTITY_THRESHOLD = 1.0f;
-            else if (IDENTITY_THRESHOLD < 0.0f)
-                IDENTITY_THRESHOLD = 0.0f;
-        }
-        else if (arg == "-suspicious_span") {
-            SUSPICIOUS_SPAN_THRESHOLD = static_cast<uint32_t>(std::stoi(value));
-        }
-        else if (arg == "-@gate") {
-            GATE_COVERAGE = std::stoi(value);
-        }
-        else if (arg == "-@cut_off") {
-            CUTOFF = std::stoi(value);
-        }
-        else if (arg == "-@identity_threshold") {
-            IDENTITY_THRESHOLD = std::stof(value);
-        }
-        else if (arg == "-@suspicious_span") {
-            SUSPICIOUS_SPAN_THRESHOLD = static_cast<uint32_t>(std::stoi(value));
-        }
-        else if (arg == "-identity_threshold") {
-            IDENTITY_THRESHOLD = std::stof(value);
-            if (IDENTITY_THRESHOLD > 1.0f)
-                IDENTITY_THRESHOLD = 1.0f;
-            else if (IDENTITY_THRESHOLD < 0.0f)
-                IDENTITY_THRESHOLD = 0.0f;
-        }
-        else if (arg == "-suspicious_span") {
-            SUSPICIOUS_SPAN_THRESHOLD = static_cast<uint32_t>(std::stoi(value));
-        }
-        else if (arg == "-threads") {
-            THREADS = std::stoi(value);
-        }
-        else if (arg == "-reference") {
-            REFERENCE = cleanArg(value);
-        }
-        else if (arg == "-genome") {
-            GENOME_DIR = cleanArg(value);
-        }
-        else if (arg == "-stripe") {
-            STRIPE_NAME = cleanArg(value);
-        }
-        else if (arg == "-data") {
-            READS = cleanArg(value);
-        }
-        else if (arg == "-out_dir") {
-            OUTPUT_DIR = cleanArg(value);
-        }
-        else if (arg == "-match_all") {
-            MATCH_ALL = (value == "true");
-        }
-        else if (arg == "-sw") {
-            GET_SW = (value == "true");
-        }
-        else if (arg == "-paired") {
-            PAIRED_READS = (value == "true");
-        }
-        else if (arg == "-debug_coverage") {
-            DEBUG_COVERAGE = (value == "true");
-        }
+            else if (arg == "-@suspicious_span") {
+                SUSPICIOUS_SPAN_THRESHOLD = static_cast<uint32_t>(std::stoi(value));
+            }
+            else if (arg == "-identity_threshold") {
+                IDENTITY_THRESHOLD = std::stof(value);
+                if (IDENTITY_THRESHOLD > 1.0f)
+                    IDENTITY_THRESHOLD = 1.0f;
+                else if (IDENTITY_THRESHOLD < 0.0f)
+                    IDENTITY_THRESHOLD = 0.0f;
+            }
+            else if (arg == "-suspicious_span") {
+                SUSPICIOUS_SPAN_THRESHOLD = static_cast<uint32_t>(std::stoi(value));
+            }
+            else if (arg == "-@gate") {
+                GATE_COVERAGE = std::stoi(value);
+            }
+            else if (arg == "-@cut_off") {
+                CUTOFF = std::stoi(value);
+            }
+            else if (arg == "-@identity_threshold") {
+                IDENTITY_THRESHOLD = std::stof(value);
+            }
+            else if (arg == "-@suspicious_span") {
+                SUSPICIOUS_SPAN_THRESHOLD = static_cast<uint32_t>(std::stoi(value));
+            }
+            else if (arg == "-identity_threshold") {
+                IDENTITY_THRESHOLD = std::stof(value);
+                if (IDENTITY_THRESHOLD > 1.0f)
+                    IDENTITY_THRESHOLD = 1.0f;
+                else if (IDENTITY_THRESHOLD < 0.0f)
+                    IDENTITY_THRESHOLD = 0.0f;
+            }
+            else if (arg == "-suspicious_span") {
+                SUSPICIOUS_SPAN_THRESHOLD = static_cast<uint32_t>(std::stoi(value));
+            }
+            else if (arg == "-threads") {
+                int threads = std::stoi(value);
+                if (threads < 1) {
+                    cerr << "Error: -threads must be at least 1\n";
+                    exit(2);
+                }
+                THREADS = threads;
+            }
+            else if (arg == "-reference") {
+                REFERENCE = cleanArg(value);
+            }
+            else if (arg == "-genome") {
+                GENOME_DIR = cleanArg(value);
+            }
+            else if (arg == "-stripe") {
+                STRIPE_NAME = cleanArg(value);
+            }
+            else if (arg == "-data") {
+                READS = cleanArg(value);
+            }
+            else if (arg == "-out_dir") {
+                OUTPUT_DIR = cleanArg(value);
+            }
+            else if (arg == "-match_all") {
+                MATCH_ALL = (value == "true");
+            }
+            else if (arg == "-sw") {
+                GET_SW = (value == "true");
+            }
+            else if (arg == "-paired") {
+                PAIRED_READS = (value == "true");
+            }
+            else if (arg == "-debug_coverage") {
+                DEBUG_COVERAGE = (value == "true");
+            }
 #ifdef USE_ALIGNMENT_DENSITY
-        else if (arg == "-min_span") {
-            MIN_ALIGNMENT_SPAN = std::stoi(value);
-            if (MIN_ALIGNMENT_SPAN < 1)
-                MIN_ALIGNMENT_SPAN = 1;
-        }
-        else if (arg == "-min_density") {
-            MIN_ALIGNMENT_DENSITY = std::stof(value);
-            if (MIN_ALIGNMENT_DENSITY > 1.0f)
-                MIN_ALIGNMENT_DENSITY = 1.0f;
-            else if (MIN_ALIGNMENT_DENSITY < 0.0f)
-                MIN_ALIGNMENT_DENSITY = 0.0f;
-        }
-        else if (arg == "-min_matches_abs") {
-            MIN_ABSOLUTE_MATCHES = std::stoi(value);
-            if (MIN_ABSOLUTE_MATCHES < 1)
-                MIN_ABSOLUTE_MATCHES = 1;
-        }
+            else if (arg == "-min_span") {
+                MIN_ALIGNMENT_SPAN = std::stoi(value);
+                if (MIN_ALIGNMENT_SPAN < 1)
+                    MIN_ALIGNMENT_SPAN = 1;
+            }
+            else if (arg == "-min_density") {
+                MIN_ALIGNMENT_DENSITY = std::stof(value);
+                if (MIN_ALIGNMENT_DENSITY > 1.0f)
+                    MIN_ALIGNMENT_DENSITY = 1.0f;
+                else if (MIN_ALIGNMENT_DENSITY < 0.0f)
+                    MIN_ALIGNMENT_DENSITY = 0.0f;
+            }
+            else if (arg == "-min_matches_abs") {
+                MIN_ABSOLUTE_MATCHES = std::stoi(value);
+                if (MIN_ABSOLUTE_MATCHES < 1)
+                    MIN_ABSOLUTE_MATCHES = 1;
+            }
 #endif
 
-        else {
-            cerr << "Error: Unknown option: " << arg << std::endl;
+            else {
+                cerr << "Error: unknown search option: " << arg << '\n';
+                exit(2);
+            }
+        }
+        catch (const std::invalid_argument&) {
+            cerr << "Error: invalid value for " << arg << ": " << value << '\n';
+            exit(2);
+        }
+        catch (const std::out_of_range&) {
+            cerr << "Error: value out of range for " << arg << ": " << value << '\n';
+            exit(2);
         }
     }
 
+    if (READS.empty()) {
+        cerr << "Error: missing -data <file>; see skippy search --help\n";
+        exit(2);
+    }
+    if (GENOME_DIR.empty() && REFERENCE.empty()) {
+        cerr << "Error: missing -genome <dir> or -reference <fasta>; see skippy search --help\n";
+        exit(2);
+    }
+    if (CONTRACT_TYPE != "subs" && CONTRACT_TYPE != "indels") {
+        cerr << "Error: invalid -contract value: " << CONTRACT_TYPE << " (expected subs or indels)\n";
+        exit(2);
+    }
 
     kmer_encoding_table[(size_t)'A'] = 0;
     kmer_encoding_table[(size_t)'C'] = 1;

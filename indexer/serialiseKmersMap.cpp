@@ -34,7 +34,7 @@
 #include <thread>
 #include <vector>
 
-void serializeMap(std::vector<protected_vector<uint32_t>>& kmersMap,
+bool serializeMap(std::vector<protected_vector<uint32_t>>& kmersMap,
                   const std::string& innerMapFilename, const std::string& outerMapFilename)
 {
     constexpr uint32_t M = 10000;
@@ -177,8 +177,9 @@ void serializeMap(std::vector<protected_vector<uint32_t>>& kmersMap,
         std::ofstream innerFile(innerMapFilename, std::ios::binary);
         std::ofstream outerFile(outerMapFilename, std::ios::binary);
         if (!innerFile || !outerFile) {
-            std::cerr << "serializeMap: failed to open output files\n";
-            return;
+            std::cerr << "Error: could not open " << innerMapFilename << " or " << outerMapFilename
+                      << " for writing\n";
+            return false;
         }
 
         for (size_t t = 0; t < numThreads; ++t) {
@@ -204,6 +205,11 @@ void serializeMap(std::vector<protected_vector<uint32_t>>& kmersMap,
 
         innerFile.close();
         outerFile.close();
+        if (!innerFile || !outerFile) {
+            std::cerr << "Error: could not write " << innerMapFilename << " or " << outerMapFilename
+                      << '\n';
+            return false;
+        }
     }
 
     // Write hi-bit bitmap
@@ -216,13 +222,19 @@ void serializeMap(std::vector<protected_vector<uint32_t>>& kmersMap,
             hiBitFilename += "_HiBit";
 
         std::ofstream hiBitFile(hiBitFilename, std::ios::binary);
-        if (hiBitFile) {
-            hiBitFile.write(reinterpret_cast<const char*>(hiBitmap.data()),
-                            hiBitmap.size() * sizeof(uint32_t));
-            hiBitFile.close();
-            std::cout << "Hi-bit bitmap written (" << hiBitmap.size() * 4 / (1024 * 1024)
-                      << " MB)\n";
+        if (!hiBitFile) {
+            std::cerr << "Error: could not open " << hiBitFilename << " for writing\n";
+            return false;
         }
+        hiBitFile.write(reinterpret_cast<const char*>(hiBitmap.data()),
+                        hiBitmap.size() * sizeof(uint32_t));
+        hiBitFile.close();
+        if (!hiBitFile) {
+            std::cerr << "Error: could not write " << hiBitFilename << '\n';
+            return false;
+        }
+        std::cout << "Hi-bit bitmap written (" << hiBitmap.size() * 4 / (1024 * 1024)
+                  << " MB)\n";
     }
 
     // Reduce stats
@@ -234,6 +246,7 @@ void serializeMap(std::vector<protected_vector<uint32_t>>& kmersMap,
     }
     std::cout << "Longest inner vector: " << longest << "\n";
     std::cout << "Inner vectors length > " << M << ": " << longCount << "\n";
+    return true;
 }
 
 void deserializeMap(const std::string& innerMapFilename, const std::string& outerMapFilename,
@@ -303,7 +316,7 @@ bool writeTextBlobToFile(const char* text, std::size_t length, const std::string
         return false;
     outputFile.write(text, length);
     outputFile.close();
-    return true;
+    return static_cast<bool>(outputFile);
 }
 
 std::pair<char*, std::size_t> readTextBlobFromFile(const std::string& filename)

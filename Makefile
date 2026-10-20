@@ -51,4 +51,5 @@ clean:
 	rm -rf build skippy
 
 test: skippy
+	python3 -m tests.test_cli
 	python3 -m tests.test_mito
