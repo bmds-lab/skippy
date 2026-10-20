@@ -8,7 +8,8 @@
 #ifndef main_h
 #define main_h
 
-#include "dirent.h"
+#include <sys/stat.h>
+
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -25,22 +26,21 @@
 #include <set>
 #include <sstream>
 #include <string>
-#include <sys/stat.h>
 #include <thread>
 #include <unordered_map>
 #include <vector>
 
+#include "dirent.h"
 #include "findSpans.hpp"
 #include "serialiseKmersMap.hpp"
 
 // New: ReadInfo struct for offset-based zero-copy reads
 struct ReadInfo {
-    size_t start;   // byte offset in blob where sequence begins
-    size_t length;  // number of bases
+    size_t start;  // byte offset in blob where sequence begins
+    size_t length; // number of bases
 };
 
-struct SpanStruct
-{
+struct SpanStruct {
     uint32_t readID;
     uint32_t start;
     uint32_t end;

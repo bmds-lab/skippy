@@ -24,14 +24,14 @@
 //    // Simulate some processing
 //    for (int i = 0; i < 1000; ++i) {
 //        Result result;
-//        result.data = "Thread " + std::to_string(threadId) + " result " + std::to_string(i);
-//        queue.push(result);
+//        result.data = "Thread " + std::to_string(threadId) + " result " +
+//        std::to_string(i); queue.push(result);
 //    }
 //}
 
 extern QueryTable ref_ID_Table;
 
-static std::string getFirstToken(const std::string &str)
+static std::string getFirstToken(const std::string& str)
 {
     std::istringstream iss(str);
     std::string firstToken;
@@ -39,7 +39,7 @@ static std::string getFirstToken(const std::string &str)
     return firstToken;
 }
 
-void writer(SafeQueue &queue, const std::string &filename)
+void writer(SafeQueue& queue, const std::string& filename)
 {
     std::ofstream outFile(filename);
     Result result;
@@ -47,22 +47,20 @@ void writer(SafeQueue &queue, const std::string &filename)
     uint32_t key = 0;
     char buffer[1024];
     uint32_t resultsCount = 0;
-    while (queue.pop(result))
-    {
+    while (queue.pop(result)) {
         // here format the output result and write it out
 
         // key is reference# in fasta file
-        // note: the queryTable struct is defined in serialiseKmersMap (for some unknown reason...
+        // note: the queryTable struct is defined in serialiseKmersMap (for some
+        // unknown reason...
         // :-) )
 
         key = ref_ID_Table.query(result.refBegin);
-        if (key == -1)
-        {
+        if (key == -1) {
             std::cout << "referenceIndex = " << result.refBegin << " Ref_ID not found."
                       << std::endl;
         }
-        else
-        {
+        else {
             refID = getFirstToken(ref_ID_Table.getValue(key));
         }
 

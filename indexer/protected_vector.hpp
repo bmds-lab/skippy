@@ -13,32 +13,29 @@
         CLASS PROTECTED_VECTOR
         ----------------------
 */
-template <typename T> class protected_vector : public std::vector<T>
-{
-  private:
+template <typename T> class protected_vector : public std::vector<T> {
+private:
     std::atomic<uint32_t> lock;
 
-  public:
+public:
     /*
             PROTECTED_VECTOR::PROTECTED_VECTOR()
             ------------------------------------
     */
     protected_vector() : lock(0)
-    {
-        /* Nothing */
+    { /* Nothing */
     }
 
     /*
             PROTECTED_VECTOR::PUSH_BACK()
             -----------------------------
     */
-    void push_back(const T &val)
+    void push_back(const T& val)
     {
         uint32_t expected = 0;
         //			uint32_t collision = 0;
 
-        while (!lock.compare_exchange_strong(expected, 1))
-        {
+        while (!lock.compare_exchange_strong(expected, 1)) {
             expected = 0;
             //				collision = 1;
         }

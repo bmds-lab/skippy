@@ -2,8 +2,9 @@
 #define GENERATE_SEED_MATRIX_HPP
 
 #include <string>
-#include "stripe_pattern.h"
+
 #include "MonteCarlo.hpp"
+#include "stripe_pattern.h"
 
 // Generate a seed budget matrix and save to disk.
 // Uses fixed count error model (fast) with greedy seed placement.
@@ -23,14 +24,9 @@
 //   <baseName>_indels_greedy.bin/.csv   — indels contract
 //
 // Returns true on success.
-bool generateSeedMatrix(
-    const StripePattern& pattern,
-    PlacementStrategy    strategy,
-    ErrorType            errorType,
-    const std::string&   baseName,
-    int                  trials            = 10000,
-    int                  maxReadLength     = 2000,
-    int                  maxErrorPct       = 35,
-    double               targetProbability = 0.999);
+bool generateSeedMatrix(const StripePattern& pattern, PlacementStrategy strategy,
+                        ErrorType errorType, const std::string& baseName, int trials = 10000,
+                        int maxReadLength = 2000, int maxErrorPct = 35,
+                        double targetProbability = 0.999);
 
 #endif // GENERATE_SEED_MATRIX_HPP

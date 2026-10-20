@@ -12,14 +12,13 @@
 #include <type_traits>
 #include <vector>
 
-class ThreadPool
-{
-  public:
+class ThreadPool {
+public:
     ThreadPool(size_t numThreads);
     ~ThreadPool();
 
     template <class F, class... Args>
-    auto enqueueTask(F &&f, Args &&...args)
+    auto enqueueTask(F&& f, Args&&... args)
         -> std::future<typename std::invoke_result<F, Args...>::type>;
 
     void shutdown();
@@ -28,7 +27,7 @@ class ThreadPool
         return workers.size();
     } // Added method to get number of threads
 
-  private:
+private:
     std::vector<std::thread> workers;
     std::queue<std::function<void()>> tasks;
 
@@ -39,34 +38,28 @@ class ThreadPool
 
 inline ThreadPool::ThreadPool(size_t numThreads) : stop(false)
 {
-    try
-    {
-        for (size_t i = 0; i < numThreads; ++i)
-        {
-            workers.emplace_back(
-                [this]
-                {
-                    for (;;)
+    try {
+        for (size_t i = 0; i < numThreads; ++i) {
+            workers.emplace_back([this] {
+                for (;;) {
+                    std::function<void()> task;
+
                     {
-                        std::function<void()> task;
-
-                        {
-                            std::unique_lock<std::mutex> lock(this->queueMutex);
-                            this->condition.wait(lock, [this]
-                                                 { return this->stop || !this->tasks.empty(); });
-                            if (this->stop && this->tasks.empty())
-                                return;
-                            task = std::move(this->tasks.front());
-                            this->tasks.pop();
-                        }
-
-                        task();
+                        std::unique_lock<std::mutex> lock(this->queueMutex);
+                        this->condition.wait(lock,
+                                             [this] { return this->stop || !this->tasks.empty(); });
+                        if (this->stop && this->tasks.empty())
+                            return;
+                        task = std::move(this->tasks.front());
+                        this->tasks.pop();
                     }
-                });
+
+                    task();
+                }
+            });
         }
     }
-    catch (...)
-    {
+    catch (...) {
         stop = true;
         throw;
     }
@@ -78,7 +71,7 @@ inline ThreadPool::~ThreadPool()
 }
 
 template <class F, class... Args>
-auto ThreadPool::enqueueTask(F &&f, Args &&...args)
+auto ThreadPool::enqueueTask(F&& f, Args&&... args)
     -> std::future<typename std::invoke_result<F, Args...>::type>
 {
     using returnType = typename std::invoke_result<F, Args...>::type;
@@ -106,10 +99,8 @@ inline void ThreadPool::shutdown()
         stop = true;
     }
     condition.notify_all();
-    for (std::thread &worker : workers)
-    {
-        if (worker.joinable())
-        {
+    for (std::thread& worker : workers) {
+        if (worker.joinable()) {
             worker.join();
         }
     }

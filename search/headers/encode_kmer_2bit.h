@@ -15,9 +15,10 @@
 
 #pragma once
 
-#include <cstdint>
-#include <cctype>
 #include <stdint.h>
+
+#include <cctype>
+#include <cstdint>
 #include <string>
 
 /*
@@ -34,14 +35,13 @@ static constexpr int STRIPED_WEIGHT = 16;
     Used offsets (0-based within the 21bp window):
       0,1, 3,4,5, 7,8, 10,11,12,13, 15,16, 18,19,20
 */
-static constexpr int STRIPED_USED_INDICES[STRIPED_WEIGHT] =
-{
-    0, 1,        // 2
-    3, 4, 5,     // 3
-    7, 8,        // 2
-    10,11,12,13, // 4
-    15,16,       // 2
-    18,19,20     // 3
+static constexpr int STRIPED_USED_INDICES[STRIPED_WEIGHT] = {
+    0,  1,          // 2
+    3,  4,  5,      // 3
+    7,  8,          // 2
+    10, 11, 12, 13, // 4
+    15, 16,         // 2
+    18, 19, 20      // 3
 };
 
 /*
@@ -50,21 +50,28 @@ static constexpr int STRIPED_USED_INDICES[STRIPED_WEIGHT] =
     Forward striped encoder (16 bases packed into 32 bits), rejecting non-ACGT.
     Encoding: A=0, C=1, G=2, T=3
 */
-inline bool encode_striped_2X3X2X4X2X3(const char *p, uint32_t &packed)
+inline bool encode_striped_2X3X2X4X2X3(const char* p, uint32_t& packed)
 {
     packed = 0;
-    for (int i = 0; i < STRIPED_WEIGHT; ++i)
-    {
+    for (int i = 0; i < STRIPED_WEIGHT; ++i) {
         char base = (char)toupper((unsigned char)p[STRIPED_USED_INDICES[i]]);
         uint32_t code;
 
-        switch (base)
-        {
-            case 'A': code = 0; break;
-            case 'C': code = 1; break;
-            case 'G': code = 2; break;
-            case 'T': code = 3; break;
-            default: return false;
+        switch (base) {
+        case 'A':
+            code = 0;
+            break;
+        case 'C':
+            code = 1;
+            break;
+        case 'G':
+            code = 2;
+            break;
+        case 'T':
+            code = 3;
+            break;
+        default:
+            return false;
         }
 
         packed = (packed << 2) | code;
@@ -87,22 +94,29 @@ inline bool encode_striped_2X3X2X4X2X3(const char *p, uint32_t &packed)
       comp(G)=C -> 1
       comp(T)=A -> 0
 */
-inline bool encode_rc_striped_2X3X2X4X2X3(const char *p, uint32_t &packed)
+inline bool encode_rc_striped_2X3X2X4X2X3(const char* p, uint32_t& packed)
 {
     packed = 0;
-    for (int i = 0; i < STRIPED_WEIGHT; ++i)
-    {
+    for (int i = 0; i < STRIPED_WEIGHT; ++i) {
         const int forward_pos = (STRIPED_WINDOW_SIZE - 1) - STRIPED_USED_INDICES[i];
         char base = (char)toupper((unsigned char)p[forward_pos]);
 
         uint32_t code;
-        switch (base)
-        {
-            case 'A': code = 3; break; // comp(A)=T
-            case 'C': code = 2; break; // comp(C)=G
-            case 'G': code = 1; break; // comp(G)=C
-            case 'T': code = 0; break; // comp(T)=A
-            default: return false;
+        switch (base) {
+        case 'A':
+            code = 3;
+            break; // comp(A)=T
+        case 'C':
+            code = 2;
+            break; // comp(C)=G
+        case 'G':
+            code = 1;
+            break; // comp(G)=C
+        case 'T':
+            code = 0;
+            break; // comp(T)=A
+        default:
+            return false;
         }
 
         packed = (packed << 2) | code;
@@ -117,12 +131,12 @@ inline bool encode_rc_striped_2X3X2X4X2X3(const char *p, uint32_t &packed)
     (Yes, the names no longer match the pattern; that is intentional to avoid
     a sweeping refactor during this experiment phase.)
 */
-inline bool encode_striped_3X3X4X3X3X(const char *p, uint32_t &packed)
+inline bool encode_striped_3X3X4X3X3X(const char* p, uint32_t& packed)
 {
     return encode_striped_2X3X2X4X2X3(p, packed);
 }
 
-inline bool encode_rc_striped_3X3X4X3X3X(const char *p, uint32_t &packed)
+inline bool encode_rc_striped_3X3X4X3X3X(const char* p, uint32_t& packed)
 {
     return encode_rc_striped_2X3X2X4X2X3(p, packed);
 }
@@ -130,10 +144,10 @@ inline bool encode_rc_striped_3X3X4X3X3X(const char *p, uint32_t &packed)
 /*
     CLASS ENCODE_KMER_2BIT
     ----------------------
-    Construct and manipulate kmers encoded in 2 bits per base (A=00, C=01, G=10, T=11)
+    Construct and manipulate kmers encoded in 2 bits per base (A=00, C=01, G=10,
+   T=11)
 */
-class encode_kmer_2bit
-{
+class encode_kmer_2bit {
 private:
     /*
         Fast lookup for encoding and decoding kmers
@@ -176,7 +190,7 @@ public:
         ENCODE_KMER_2BIT::PACK_20MER()
         ------------------------------
     */
-    static uint64_t pack_20mer(const char *sequence)
+    static uint64_t pack_20mer(const char* sequence)
     {
         uint64_t packed = 0;
         for (size_t pos = 0; pos < 20; pos++)
@@ -188,7 +202,7 @@ public:
         ENCODE_KMER_2BIT::PACK_32MER()
         ------------------------------
     */
-    static uint64_t pack_32mer(const char *sequence)
+    static uint64_t pack_32mer(const char* sequence)
     {
         uint64_t packed = 0;
         for (size_t pos = 0; pos < 32; pos++)
@@ -200,7 +214,7 @@ public:
         ENCODE_KMER_2BIT::UNPACK_20MER()
         --------------------------------
     */
-    static void unpack_20mer(char *into, uint64_t packed_sequence)
+    static void unpack_20mer(char* into, uint64_t packed_sequence)
     {
         for (int32_t pos = 19; pos >= 0; pos--)
             *into++ = (char)kmer_encoding_table[(packed_sequence >> (pos * 2)) & 3];
@@ -258,4 +272,3 @@ public:
         return kmer ^ reverse_complement(kmer);
     }
 };
-

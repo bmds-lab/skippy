@@ -16,10 +16,11 @@
 //   Add edlib-1.2.7/edlib/src/edlib.cpp to the object list
 //   Add -Iedlib-1.2.7/edlib/include to CFLAGS
 
-#include "edlib-1.2.7/edlib/include/edlib.h"
+#include <cstdint>
 #include <string>
 #include <string_view>
-#include <cstdint>
+
+#include "edlib-1.2.7/edlib/include/edlib.h"
 
 // ---------------------------------------------------------------------------
 // alignSequencesNW
@@ -35,34 +36,26 @@
 //   edit_distance — output: edit distance (substitutions + indels)
 // ---------------------------------------------------------------------------
 
-void alignSequencesNW(
-    const std::string_view& refWindow,
-    const std::string&      query,
-    uint32_t&               eq,
-    uint32_t&               read_len,
-    int&                    edit_distance)
+void alignSequencesNW(const std::string_view& refWindow, const std::string& query, uint32_t& eq,
+                      uint32_t& read_len, int& edit_distance)
 {
-    eq            = 0;
+    eq = 0;
     edit_distance = -1;
-    read_len      = static_cast<uint32_t>(query.size());
+    read_len = static_cast<uint32_t>(query.size());
 
     if (query.empty() || refWindow.empty())
         return;
 
     // edlib global mode: align full query against reference window
-    EdlibAlignResult result = edlibAlign(
-        query.c_str(),
-        static_cast<int>(query.size()),
-        refWindow.data(),
-        static_cast<int>(refWindow.size()),
-        edlibNewAlignConfig(
-            -1,                    // no edit distance limit
-            EDLIB_MODE_NW,         // global alignment (Needleman-Wunsch)
-            EDLIB_TASK_PATH,       // compute full alignment path
-            nullptr, 0));          // no custom alphabet
+    EdlibAlignResult result =
+        edlibAlign(query.c_str(), static_cast<int>(query.size()), refWindow.data(),
+                   static_cast<int>(refWindow.size()),
+                   edlibNewAlignConfig(-1,              // no edit distance limit
+                                       EDLIB_MODE_NW,   // global alignment (Needleman-Wunsch)
+                                       EDLIB_TASK_PATH, // compute full alignment path
+                                       nullptr, 0));    // no custom alphabet
 
-    if (result.status != EDLIB_STATUS_OK || result.editDistance < 0)
-    {
+    if (result.status != EDLIB_STATUS_OK || result.editDistance < 0) {
         edlibFreeAlignResult(result);
         return;
     }
@@ -75,11 +68,9 @@ void alignSequencesNW(
     //   1 = insert into target (deletion from query)
     //   2 = insert into query  (insertion in query)
     //   3 = mismatch
-    if (result.alignment != nullptr)
-    {
-        for (int i = 0; i < result.alignmentLength; i++)
-        {
-            if (result.alignment[i] == 0)   // exact match
+    if (result.alignment != nullptr) {
+        for (int i = 0; i < result.alignmentLength; i++) {
+            if (result.alignment[i] == 0) // exact match
                 eq++;
         }
     }
@@ -92,16 +83,15 @@ void alignSequencesNW(
 // Returns eq/read_len as a float — same quantity used in the SW veto.
 // ---------------------------------------------------------------------------
 
-float alignNW_identity(
-    const std::string_view& refWindow,
-    const std::string&      query)
+float alignNW_identity(const std::string_view& refWindow, const std::string& query)
 {
-    uint32_t eq       = 0;
+    uint32_t eq = 0;
     uint32_t read_len = 0;
-    int      edit_dist = -1;
+    int edit_dist = -1;
 
     alignSequencesNW(refWindow, query, eq, read_len, edit_dist);
 
-    if (read_len == 0) return 0.0f;
+    if (read_len == 0)
+        return 0.0f;
     return static_cast<float>(eq) / static_cast<float>(read_len);
 }

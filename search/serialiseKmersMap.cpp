@@ -5,18 +5,20 @@
 //  Created by Shlomo Geva on 19/7/2023.
 //
 #include "serialiseKmersMap.hpp"
-#include "kmerUtilities.hpp"
 
-#include <cstdio>
-#include <cstdlib>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
-void serializeMap(const std::vector<std::vector<uint32_t>> &kmersMap,
-                  const std::string &innerMapFilename, const std::string &outerMapFilename)
+#include <cstdio>
+#include <cstdlib>
+
+#include "kmerUtilities.hpp"
+
+void serializeMap(const std::vector<std::vector<uint32_t>>& kmersMap,
+                  const std::string& innerMapFilename, const std::string& outerMapFilename)
 {
     // Set the buffer size to 8192 bytes (for example)
     constexpr std::streamsize bufferSize = 8192;
@@ -29,14 +31,13 @@ void serializeMap(const std::vector<std::vector<uint32_t>> &kmersMap,
     outerMapFile.rdbuf()->pubsetbuf(nullptr, bufferSize);
 
     uint32_t offset = 0;
-    for (const auto &innerVector : kmersMap)
-    {
+    for (const auto& innerVector : kmersMap) {
         // Write inner vector data
-        innerMapFile.write(reinterpret_cast<const char *>(innerVector.data()),
+        innerMapFile.write(reinterpret_cast<const char*>(innerVector.data()),
                            innerVector.size() * sizeof(uint32_t));
 
         // Write the offset for the outer map
-        outerMapFile.write(reinterpret_cast<const char *>(&offset), sizeof(uint32_t));
+        outerMapFile.write(reinterpret_cast<const char*>(&offset), sizeof(uint32_t));
 
         // Calculate the offset for the next inner vector
         offset += static_cast<uint32_t>(innerVector.size());
@@ -46,45 +47,41 @@ void serializeMap(const std::vector<std::vector<uint32_t>> &kmersMap,
     outerMapFile.close();
 }
 
-void deserializeMap(const std::string &innerMapFilename, const std::string &outerMapFilename,
-                    std::span<uint32_t> &innerMapBlob, std::span<uint32_t> &outerMapBlob)
+void deserializeMap(const std::string& innerMapFilename, const std::string& outerMapFilename,
+                    std::span<uint32_t>& innerMapBlob, std::span<uint32_t>& outerMapBlob)
 {
-
     int fd;
     struct stat sb;
-    void *addr;
+    void* addr;
     size_t length;
     fd = open(innerMapFilename.c_str(), O_RDONLY);
     fstat(fd, &sb);
     length = sb.st_size;
     addr = mmap(nullptr, length, PROT_READ, MAP_PRIVATE, fd, 0);
-    innerMapBlob = std::span<uint32_t>((uint32_t *)addr, length / sizeof(uint32_t));
+    innerMapBlob = std::span<uint32_t>((uint32_t*)addr, length / sizeof(uint32_t));
     close(fd);
     fd = open(outerMapFilename.c_str(), O_RDONLY);
     fstat(fd, &sb);
     length = sb.st_size;
     addr = mmap(nullptr, length, PROT_READ, MAP_PRIVATE, fd, 0);
-    outerMapBlob = std::span<uint32_t>((uint32_t *)addr, length / sizeof(uint32_t));
+    outerMapBlob = std::span<uint32_t>((uint32_t*)addr, length / sizeof(uint32_t));
     close(fd);
 }
 
 // Helper function to access the index
-double getInnerVector(std::vector<store_position> &result,
-                      const std::vector<uint32_t> &innerMapBlob,
-                      const std::vector<uint32_t> &outerMapBlob, uint32_t index, uint32_t maxLen)
+double getInnerVector(std::vector<store_position>& result,
+                      const std::vector<uint32_t>& innerMapBlob,
+                      const std::vector<uint32_t>& outerMapBlob, uint32_t index, uint32_t maxLen)
 {
-    if (index < outerMapBlob.size())
-    {
+    if (index < outerMapBlob.size()) {
         uint32_t startOffset = outerMapBlob[index];
         uint32_t endOffset = (index + 1 < outerMapBlob.size()) ? outerMapBlob[index + 1]
                                                                : (uint32_t)innerMapBlob.size();
         double range = endOffset - startOffset;
-        if (range > maxLen)
-        {
+        if (range > maxLen) {
             return -range; // ignore crazy long inverted lists
         }
-        if (endOffset > startOffset)
-        {
+        if (endOffset > startOffset) {
             result.push_back(
                 store_position{innerMapBlob.data() + startOffset, endOffset - startOffset});
             return range + 1;
@@ -95,11 +92,10 @@ double getInnerVector(std::vector<store_position> &result,
     return 0; // beyond size of outer blob
 }
 
-bool writeTextBlobToFile(const char *text, std::size_t length, const std::string &filename)
+bool writeTextBlobToFile(const char* text, std::size_t length, const std::string& filename)
 {
     std::ofstream outputFile(filename, std::ios::binary);
-    if (!outputFile.is_open())
-    {
+    if (!outputFile.is_open()) {
         return false; // Failed to open the file
     }
 
@@ -110,18 +106,18 @@ bool writeTextBlobToFile(const char *text, std::size_t length, const std::string
     return true; // File write successful
 }
 
-std::span<char> readTextBlobFromFile(const std::string &filename)
+std::span<char> readTextBlobFromFile(const std::string& filename)
 {
     int fd;
     struct stat sb;
-    void *addr;
+    void* addr;
     size_t length;
 
     fd = open(filename.c_str(), O_RDONLY);
     fstat(fd, &sb);
     length = sb.st_size;
     addr = mmap(nullptr, length, PROT_READ, MAP_PRIVATE, fd, 0);
-    std::span<char> textBlob((char *)addr, length);
+    std::span<char> textBlob((char*)addr, length);
     close(fd);
     return textBlob;
     /*
@@ -133,7 +129,8 @@ std::span<char> readTextBlobFromFile(const std::string &filename)
         std::size_t length = inputFile.tellg(); // Get the file size
         inputFile.seekg(0); // Move the file pointer back to the beginning
 
-        char *buffer = (char *)malloc(length); // Create a buffer to hold the content
+        char *buffer = (char *)malloc(length); // Create a buffer to hold the
+       content
 
         if (!inputFile.read(buffer, length)) {
             return std::span<char>(); // Failed to read the content
@@ -148,12 +145,11 @@ std::span<char> readTextBlobFromFile(const std::string &filename)
     */
 }
 
-QueryTable readTableFromFile(const std::string &filename)
+QueryTable readTableFromFile(const std::string& filename)
 {
     QueryTable table;
     std::ifstream inFile(filename);
-    if (!inFile)
-    {
+    if (!inFile) {
         std::cerr << "Error opening the file: " << filename << std::endl;
         return table;
     }
@@ -161,11 +157,9 @@ QueryTable readTableFromFile(const std::string &filename)
     uint32_t key;
     std::string value;
     std::string line; // Used to read the entire line
-    while (std::getline(inFile, line))
-    {
+    while (std::getline(inFile, line)) {
         std::istringstream iss(line);
-        if (iss >> key)
-        {
+        if (iss >> key) {
             value = line.substr(line.find(' ') + 1);
             //    std::cout << key << " : " << value << std::endl;
             table.entries[key] = value;

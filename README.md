@@ -47,6 +47,27 @@ Search:
 - g++ with C++20
 - pthread
 
+## Formatting
+
+The root `.clang-format` follows the C++ Core Guidelines' suggested Stroustrup
+brace layout and C++ pointer/reference layout. Four-space indentation and
+100-column wrapping are project choices. Use clang-format 23.1.0 (the version
+checked on GitHub pushes and pull requests). Format a file from the repository
+root with:
+
+```bash
+clang-format -i indexer/main.cpp
+```
+
+To format all tracked C and C++ files:
+
+```bash
+git ls-files -z '*.c' '*.cpp' '*.h' '*.hpp' | xargs -0 clang-format -i
+```
+
+To check formatting without changing files, replace `-i` with
+`--dry-run --Werror`.
+
 ## Small end-to-end test
 
 See [tests/README.md](tests/README.md) for a human mitochondrial reference,

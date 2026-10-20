@@ -5,6 +5,8 @@
 
         Created by Shlomo Geva on 22/7/2023.
 */
+#include "packGenomeBlob.hpp"
+
 #include <stdint.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -14,33 +16,30 @@
 #include <map>
 #include <string>
 
-#include "packGenomeBlob.hpp"
-
 /*
         PACKGENOME()
         ------------
 */
-size_t packGenome(char *genome, uint64_t genome_size,
-                  std::map<std::uint32_t, std::string> &referenceIDMap)
+size_t packGenome(char* genome, uint64_t genome_size,
+                  std::map<std::uint32_t, std::string>& referenceIDMap)
 {
-    char *from;
-    char *to;
-    char *end = genome + genome_size;
+    char* from;
+    char* to;
+    char* end = genome + genome_size;
 
     // Traverse the old genome, character by character
-    for (from = to = genome; from < end; from++)
-    {
+    for (from = to = genome; from < end; from++) {
         char c = *from;
-        //        	if (c == '\n' || c == 'N')  // ignore N's (i.e do not copy across)
-        if (c ==
-            '\n') // keep N's so that later SW can calculate scores correctly, accounting for N's
-        {         /* Nothing */
+        //        	if (c == '\n' || c == 'N')  // ignore N's (i.e do not copy
+        //        across)
+        if (c == '\n') // keep N's so that later SW can calculate scores correctly,
+                       // accounting for N's
+        {              /* Nothing */
         }
-        else if (c == '>')
-        {
+        else if (c == '>') {
             // here if new sequence encountered
             // Find the start and end of the line
-            char *start = from;
+            char* start = from;
             do
                 from++;
             while (*from != '\n');
@@ -80,7 +79,7 @@ int main_unittest()
     std::cout << "Modified Genome  : " << genome << std::endl;
     std::cout << "New Genome Length: " << newLength << std::endl;
 
-    for (const auto &thang : referenceIDMap)
+    for (const auto& thang : referenceIDMap)
         std::cout << thang.first << " " << thang.second;
 
     return 0;

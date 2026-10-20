@@ -17,7 +17,7 @@
 // -----------------------------------------------------------------------------
 
 // #define USE_ABSOLUTE_MATCH_COUNT    // Version 1: Count of exact matches
-#define USE_ALIGNMENT_DENSITY          // Version 2: Density-based scoring
+#define USE_ALIGNMENT_DENSITY // Version 2: Density-based scoring
 
 // -----------------------------------------------------------------------------
 // DO NOT EDIT BELOW THIS LINE

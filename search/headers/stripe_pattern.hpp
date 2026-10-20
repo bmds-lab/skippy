@@ -22,53 +22,50 @@
     Optimisation (over original):
         - enc_table[256]    : replaces toupper() + switch in forward encode
         - enc_rc_table[256] : replaces toupper() + switch in RC encode
-        - pos_array[64]     : replaces positions[] vector indirection in hot path
-        - rc_pos_array[64]  : replaces rc_positions[] vector indirection in hot path
-    All four are precomputed once in parse().
-    The positions / rc_positions vectors are retained for print() and any
-    non-performance-critical callers.
+        - pos_array[64]     : replaces positions[] vector indirection in hot
+   path
+        - rc_pos_array[64]  : replaces rc_positions[] vector indirection in hot
+   path All four are precomputed once in parse(). The positions / rc_positions
+   vectors are retained for print() and any non-performance-critical callers.
 */
 
 #pragma once
 
-#include <cstdint>
 #include <cctype>
+#include <cstdint>
 #include <cstring>
+#include <iostream>
 #include <string>
 #include <vector>
-#include <iostream>
 
-struct StripePattern
-{
+struct StripePattern {
     // -----------------------------------------------------------------
     // Descriptive fields (set by parse, used everywhere)
     // -----------------------------------------------------------------
-    std::string      pattern_str;           // e.g. "2X3X2X4X2X3"
-    int              weight      = 0;       // number of care positions
-    int              window      = 0;       // total window span
-    bool             use64       = false;   // true if weight > 16
+    std::string pattern_str; // e.g. "2X3X2X4X2X3"
+    int weight = 0;          // number of care positions
+    int window = 0;          // total window span
+    bool use64 = false;      // true if weight > 16
 
     // -----------------------------------------------------------------
     // Hot-path arrays  (fixed size, cache-friendly, no pointer chasing)
     // -----------------------------------------------------------------
-    int     pos_array[64]    = {};          // care positions (forward)
-    int     rc_pos_array[64] = {};          // care positions (reverse complement)
+    int pos_array[64] = {};    // care positions (forward)
+    int rc_pos_array[64] = {}; // care positions (reverse complement)
 
     // Lookup tables: index by raw ASCII byte -> 2-bit code, or 0xFF for non-ACGT.
     // enc_table    : forward   A=0 C=1 G=2 T=3
     // enc_rc_table : RC        A=3 C=2 G=1 T=0  (complement built in)
-    uint8_t enc_table[256]    = {};
+    uint8_t enc_table[256] = {};
     uint8_t enc_rc_table[256] = {};
 
     // -----------------------------------------------------------------
     // Compatibility vectors  (non-hot-path: print, diagnostics, etc.)
     // -----------------------------------------------------------------
-    std::vector<int> positions;             // care positions (forward)
-    std::vector<int> rc_positions;          // care positions (RC)
-    std::vector<int> protect_positions;     // protect positions (forward)
-    std::vector<int> rc_protect_positions;  // protect positions (RC)
-
-
+    std::vector<int> positions;            // care positions (forward)
+    std::vector<int> rc_positions;         // care positions (RC)
+    std::vector<int> protect_positions;    // protect positions (forward)
+    std::vector<int> rc_protect_positions; // protect positions (RC)
 
     int span() const
     {
@@ -85,14 +82,13 @@ struct StripePattern
         return positions;
     }
 
-
     // -----------------------------------------------------------------
     // parse()
     // -----------------------------------------------------------------
     // Parses the pattern string and fills all fields.
     // Returns false and prints an error on bad input.
     // -----------------------------------------------------------------
-    bool parse(const std::string &pat)
+    bool parse(const std::string& pat)
     {
         pattern_str = pat;
 
@@ -104,40 +100,33 @@ struct StripePattern
         weight = 0;
         window = 0;
 
-        if (pat.empty())
-        {
+        if (pat.empty()) {
             std::cerr << "StripePattern: empty pattern string\n";
             return false;
         }
 
         // Validate: only digits and 'X'/'x'
-        for (char c : pat)
-        {
-            if (!isdigit((unsigned char)c) && c != 'X' && c != 'x')
-            {
-                std::cerr << "StripePattern: invalid character '" << c
-                          << "' in pattern \"" << pat << "\"\n";
+        for (char c : pat) {
+            if (!isdigit((unsigned char)c) && c != 'X' && c != 'x') {
+                std::cerr << "StripePattern: invalid character '" << c << "' in pattern \"" << pat
+                          << "\"\n";
                 return false;
             }
         }
 
         // Parse alternating runs of digits (care) and X's (don't-care)
         int pos = 0;
-        int i   = 0;
+        int i = 0;
         const int n = (int)pat.size();
 
-        while (i < n)
-        {
-            if (isdigit((unsigned char)pat[i]))
-            {
+        while (i < n) {
+            if (isdigit((unsigned char)pat[i])) {
                 int run = 0;
                 while (i < n && isdigit((unsigned char)pat[i]))
                     run = run * 10 + (pat[i++] - '0');
 
-                if (run <= 0)
-                {
-                    std::cerr << "StripePattern: zero-length care run in \""
-                              << pat << "\"\n";
+                if (run <= 0) {
+                    std::cerr << "StripePattern: zero-length care run in \"" << pat << "\"\n";
                     return false;
                 }
 
@@ -149,8 +138,7 @@ struct StripePattern
             else // 'X' or 'x'
             {
                 int run = 0;
-                while (i < n && (pat[i] == 'X' || pat[i] == 'x'))
-                {
+                while (i < n && (pat[i] == 'X' || pat[i] == 'x')) {
                     ++run;
                     ++i;
                 }
@@ -166,21 +154,18 @@ struct StripePattern
         for (int p : positions)
             isCare[p] = 1;
 
-        for (int p = 0; p < window; ++p)
-        {
+        for (int p = 0; p < window; ++p) {
             if (!isCare[p])
                 protect_positions.push_back(p);
         }
 
-        if (weight == 0)
-        {
+        if (weight == 0) {
             std::cerr << "StripePattern: no care positions in \"" << pat << "\"\n";
             return false;
         }
-        if (weight > 64)
-        {
-            std::cerr << "StripePattern: weight " << weight
-                      << " exceeds maximum of 64 in \"" << pat << "\"\n";
+        if (weight > 64) {
+            std::cerr << "StripePattern: weight " << weight << " exceeds maximum of 64 in \"" << pat
+                      << "\"\n";
             return false;
         }
 
@@ -189,35 +174,26 @@ struct StripePattern
         // RC positions: read care positions right-to-left across the window,
         // stored in forward order so the encoder loops i = 0..weight-1.
 
-//        rc_positions.resize(weight);
-//        for (int k = 0; k < weight; ++k)
-//            rc_positions[k] = (window - 1) - positions[k];
+        //        rc_positions.resize(weight);
+        //        for (int k = 0; k < weight; ++k)
+        //            rc_positions[k] = (window - 1) - positions[k];
 
         rc_positions.resize(weight);
 
         for (int k = 0; k < weight; ++k)
             rc_positions[k] = (window - 1) - positions[k];
 
-        rc_protect_positions.resize(
-            protect_positions.size());
+        rc_protect_positions.resize(protect_positions.size());
 
-        for (size_t k = 0;
-             k < protect_positions.size();
-             ++k)
-        {
-            rc_protect_positions[k] =
-                (window - 1)
-                - protect_positions[k];
+        for (size_t k = 0; k < protect_positions.size(); ++k) {
+            rc_protect_positions[k] = (window - 1) - protect_positions[k];
         }
-
-
 
         // ------------------------------------------------------------------
         // Build hot-path fixed arrays from the vectors
         // ------------------------------------------------------------------
-        for (int k = 0; k < weight; ++k)
-        {
-            pos_array[k]    = positions[k];
+        for (int k = 0; k < weight; ++k) {
+            pos_array[k] = positions[k];
             rc_pos_array[k] = rc_positions[k];
         }
 
@@ -225,20 +201,28 @@ struct StripePattern
         // Build lookup tables
         // ------------------------------------------------------------------
         // Default: every byte is invalid (0xFF)
-        memset(enc_table,    0xFF, sizeof(enc_table));
+        memset(enc_table, 0xFF, sizeof(enc_table));
         memset(enc_rc_table, 0xFF, sizeof(enc_rc_table));
 
         // Forward: A=0 C=1 G=2 T=3  (upper and lower case)
-        enc_table[(uint8_t)'A'] = 0;  enc_table[(uint8_t)'a'] = 0;
-        enc_table[(uint8_t)'C'] = 1;  enc_table[(uint8_t)'c'] = 1;
-        enc_table[(uint8_t)'G'] = 2;  enc_table[(uint8_t)'g'] = 2;
-        enc_table[(uint8_t)'T'] = 3;  enc_table[(uint8_t)'t'] = 3;
+        enc_table[(uint8_t)'A'] = 0;
+        enc_table[(uint8_t)'a'] = 0;
+        enc_table[(uint8_t)'C'] = 1;
+        enc_table[(uint8_t)'c'] = 1;
+        enc_table[(uint8_t)'G'] = 2;
+        enc_table[(uint8_t)'g'] = 2;
+        enc_table[(uint8_t)'T'] = 3;
+        enc_table[(uint8_t)'t'] = 3;
 
         // RC: complement is built into the table  A=3 C=2 G=1 T=0
-        enc_rc_table[(uint8_t)'A'] = 3;  enc_rc_table[(uint8_t)'a'] = 3;
-        enc_rc_table[(uint8_t)'C'] = 2;  enc_rc_table[(uint8_t)'c'] = 2;
-        enc_rc_table[(uint8_t)'G'] = 1;  enc_rc_table[(uint8_t)'g'] = 1;
-        enc_rc_table[(uint8_t)'T'] = 0;  enc_rc_table[(uint8_t)'t'] = 0;
+        enc_rc_table[(uint8_t)'A'] = 3;
+        enc_rc_table[(uint8_t)'a'] = 3;
+        enc_rc_table[(uint8_t)'C'] = 2;
+        enc_rc_table[(uint8_t)'c'] = 2;
+        enc_rc_table[(uint8_t)'G'] = 1;
+        enc_rc_table[(uint8_t)'g'] = 1;
+        enc_rc_table[(uint8_t)'T'] = 0;
+        enc_rc_table[(uint8_t)'t'] = 0;
 
         return true;
     }
@@ -249,13 +233,13 @@ struct StripePattern
     // Encodes a forward-strand k-mer into uint32_t (weight <= 16).
     // Returns false if any care-position base is non-ACGT.
     // -----------------------------------------------------------------
-    inline bool encode32(const char *p, uint32_t &packed) const
+    inline bool encode32(const char* p, uint32_t& packed) const
     {
         packed = 0;
-        for (int i = 0; i < weight; ++i)
-        {
+        for (int i = 0; i < weight; ++i) {
             const uint8_t code = enc_table[(uint8_t)p[pos_array[i]]];
-            if (code == 0xFF) return false;
+            if (code == 0xFF)
+                return false;
             packed = (packed << 2) | code;
         }
         return true;
@@ -267,13 +251,13 @@ struct StripePattern
     // Encodes a forward-strand k-mer into uint64_t (weight 17..64).
     // Returns false if any care-position base is non-ACGT.
     // -----------------------------------------------------------------
-    inline bool encode64(const char *p, uint64_t &packed) const
+    inline bool encode64(const char* p, uint64_t& packed) const
     {
         packed = 0;
-        for (int i = 0; i < weight; ++i)
-        {
+        for (int i = 0; i < weight; ++i) {
             const uint8_t code = enc_table[(uint8_t)p[pos_array[i]]];
-            if (code == 0xFF) return false;
+            if (code == 0xFF)
+                return false;
             packed = (packed << 2) | code;
         }
         return true;
@@ -286,13 +270,13 @@ struct StripePattern
     // Complement is handled by enc_rc_table - no extra step needed.
     // Returns false if any care-position base is non-ACGT.
     // -----------------------------------------------------------------
-    inline bool encode_rc32(const char *p, uint32_t &packed) const
+    inline bool encode_rc32(const char* p, uint32_t& packed) const
     {
         packed = 0;
-        for (int i = 0; i < weight; ++i)
-        {
+        for (int i = 0; i < weight; ++i) {
             const uint8_t code = enc_rc_table[(uint8_t)p[rc_pos_array[i]]];
-            if (code == 0xFF) return false;
+            if (code == 0xFF)
+                return false;
             packed = (packed << 2) | code;
         }
         return true;
@@ -304,13 +288,13 @@ struct StripePattern
     // Encodes a reverse-complement k-mer into uint64_t (weight 17..64).
     // Returns false if any care-position base is non-ACGT.
     // -----------------------------------------------------------------
-    inline bool encode_rc64(const char *p, uint64_t &packed) const
+    inline bool encode_rc64(const char* p, uint64_t& packed) const
     {
         packed = 0;
-        for (int i = 0; i < weight; ++i)
-        {
+        for (int i = 0; i < weight; ++i) {
             const uint8_t code = enc_rc_table[(uint8_t)p[rc_pos_array[i]]];
-            if (code == 0xFF) return false;
+            if (code == 0xFF)
+                return false;
             packed = (packed << 2) | code;
         }
         return true;
@@ -326,10 +310,12 @@ struct StripePattern
         std::cout << "Window         : " << window << " bases\n";
         std::cout << "Packed type    : uint" << (use64 ? "64" : "32") << "_t\n";
         std::cout << "Care positions :";
-        for (int p : positions) std::cout << " " << p;
+        for (int p : positions)
+            std::cout << " " << p;
         std::cout << "\n";
         std::cout << "RC positions   :";
-        for (int p : rc_positions) std::cout << " " << p;
+        for (int p : rc_positions)
+            std::cout << " " << p;
         std::cout << "\n";
     }
 };

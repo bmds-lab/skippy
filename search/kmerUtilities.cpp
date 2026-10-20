@@ -6,6 +6,7 @@
 //
 
 #include "kmerUtilities.hpp"
+
 #include <algorithm> // for std::min and std::max
 #include <climits>
 #include <iostream>
@@ -13,45 +14,39 @@
 #include <utility>
 #include <vector>
 
-//extern uint32_t KMERSIZE;
+// extern uint32_t KMERSIZE;
 extern uint32_t NUM_SEEDS; // seed skipping distancee
 extern int CUTOFF;
 extern uint64_t kmer_encoding_table[];
 
-uint32_t getSpan(const std::vector<uint32_t> &pos, uint32_t span)
+uint32_t getSpan(const std::vector<uint32_t>& pos, uint32_t span)
 {
     // calculate the span of matches covered by seeds
-    if (pos.empty())
-    {
+    if (pos.empty()) {
         return 0;
     }
 
     std::vector<Span> spans;
 
-    for (const uint32_t p : pos)
-    {
+    for (const uint32_t p : pos) {
         spans.push_back({p, p + span - 1});
     }
 
     std::vector<Span> mergedSpans;
     std::sort(spans.begin(), spans.end(),
-              [](const Span &a, const Span &b) { return a.start < b.start; });
+              [](const Span& a, const Span& b) { return a.start < b.start; });
 
-    for (const Span &span : spans)
-    {
-        if (mergedSpans.empty() || span.start > mergedSpans.back().end)
-        {
+    for (const Span& span : spans) {
+        if (mergedSpans.empty() || span.start > mergedSpans.back().end) {
             mergedSpans.push_back(span);
         }
-        else
-        {
+        else {
             mergedSpans.back().end = std::max(mergedSpans.back().end, span.end);
         }
     }
 
     uint32_t totalSpan = 0;
-    for (const Span &span : mergedSpans)
-    {
+    for (const Span& span : mergedSpans) {
         totalSpan += (span.end - span.start + 1);
     }
 
@@ -105,26 +100,21 @@ std::string unpackKmer(uint64_t packed_sequence)
 /*
     READ_ENTIRE_FILE
  */
-char *read_entire_file(const char *filename, uint64_t &fileSize)
+char* read_entire_file(const char* filename, uint64_t& fileSize)
 {
-    FILE *fp;
+    FILE* fp;
     struct stat details;
-    char *contents = NULL;
+    char* contents = NULL;
     fileSize = 0;
-    if ((fp = fopen(filename, "rb")) != NULL)
-    {
-        if (fstat(fileno(fp), &details) == 0)
-        {
-            if (details.st_size != 0 || details.st_size > UINT32_MAX)
-            {
-                contents = (char *)malloc(details.st_size);
-                if (fread(contents, details.st_size, 1, fp) != 1)
-                {
+    if ((fp = fopen(filename, "rb")) != NULL) {
+        if (fstat(fileno(fp), &details) == 0) {
+            if (details.st_size != 0 || details.st_size > UINT32_MAX) {
+                contents = (char*)malloc(details.st_size);
+                if (fread(contents, details.st_size, 1, fp) != 1) {
                     free(contents);
                     contents = NULL;
                 }
-                else
-                {
+                else {
                     fileSize = details.st_size;
                 }
             }
@@ -137,10 +127,9 @@ char *read_entire_file(const char *filename, uint64_t &fileSize)
 void displayProgress(uint64_t current, uint64_t total, int desiredUpdateInterval)
 {
     uint64_t percent = (current * 100) / total;
-    static uint64_t lastDisplayedPercent =
-        -desiredUpdateInterval; // Initialize to a value that will trigger the first update
-    if (percent - lastDisplayedPercent >= desiredUpdateInterval)
-    {
+    static uint64_t lastDisplayedPercent = -desiredUpdateInterval; // Initialize to a value that
+                                                                   // will trigger the first update
+    if (percent - lastDisplayedPercent >= desiredUpdateInterval) {
         std::cout << "Progress: " << std::setw(3) << percent << "%" << std::endl;
         std::cout.flush();
         lastDisplayedPercent = percent;

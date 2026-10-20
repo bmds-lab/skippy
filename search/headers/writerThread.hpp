@@ -8,7 +8,6 @@
 #ifndef writerThread_hpp
 #define writerThread_hpp
 
-#include "serialiseKmersMap.hpp"
 #include <condition_variable>
 #include <fstream>
 #include <iostream>
@@ -17,9 +16,10 @@
 #include <thread>
 #include <vector>
 
+#include "serialiseKmersMap.hpp"
+
 // Assuming Result is a structure to hold the result
-struct Result
-{
+struct Result {
     // Add your data members here
     uint32_t sampleIndex;
     uint32_t refBegin;
@@ -29,29 +29,27 @@ struct Result
 };
 
 // A thread-safe queue to hold results
-class SafeQueue
-{
-  private:
+class SafeQueue {
+private:
     std::queue<Result> queue;
     std::mutex mtx;
     std::condition_variable cv;
     bool finished = false;
 
-  public:
-    void push(const Result &result)
+public:
+    void push(const Result& result)
     {
         std::lock_guard<std::mutex> lock(mtx);
         queue.push(result);
         cv.notify_one();
     }
 
-    bool pop(Result &result)
+    bool pop(Result& result)
     {
         std::unique_lock<std::mutex> lock(mtx);
         cv.wait(lock, [this] { return !queue.empty() || finished; });
 
-        if (!queue.empty())
-        {
+        if (!queue.empty()) {
             result = queue.front();
             queue.pop();
             return true;
@@ -68,6 +66,6 @@ class SafeQueue
     }
 };
 
-void writer(SafeQueue &queue, const std::string &filename);
+void writer(SafeQueue& queue, const std::string& filename);
 
 #endif /* writerThread_hpp */

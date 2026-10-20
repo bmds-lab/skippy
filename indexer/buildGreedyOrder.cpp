@@ -1,16 +1,16 @@
-#include <iostream>
-#include <vector>
-#include <set>
-#include <algorithm>
-#include <iomanip>
-#include <limits>
-#include <cmath>
 #include "buildGreedyOrder.hpp"
+
+#include <algorithm>
+#include <cmath>
+#include <iomanip>
+#include <iostream>
+#include <limits>
+#include <set>
+#include <vector>
 
 using namespace std;
 
-struct GreedyState
-{
+struct GreedyState {
     int readLength;
     int maxStart;
 
@@ -24,48 +24,38 @@ struct GreedyState
     vector<int> ordering;
 };
 
-static GreedyState initialiseState(
-    int readLength,
-    int span,
-    const vector<int>& protectOffsets)
+static GreedyState initialiseState(int readLength, int span, const vector<int>& protectOffsets)
 {
     GreedyState state;
 
     state.readLength = readLength;
-    state.maxStart   = readLength - span;
+    state.maxStart = readLength - span;
 
     state.coverCount.assign(readLength, 0);
     state.protectCount.assign(readLength, 0);
     state.protectable.assign(readLength, false);
 
-    for (int start = 0; start <= state.maxStart; start++)
-    {
-        for (int off : protectOffsets)
-        {
+    for (int start = 0; start <= state.maxStart; start++) {
+        for (int off : protectOffsets) {
             int pos = start + off;
 
-            if (pos >= 0 && pos < readLength)
-            {
+            if (pos >= 0 && pos < readLength) {
                 state.protectable[pos] = true;
             }
         }
     }
 
-    for (int s = 0; s <= state.maxStart; s++)
-    {
+    for (int s = 0; s <= state.maxStart; s++) {
         state.remaining.insert(s);
     }
 
     return state;
 }
 
-static bool coverageIncomplete(
-    const GreedyState& state)
+static bool coverageIncomplete(const GreedyState& state)
 {
-    for (int x : state.coverCount)
-    {
-        if (x == 0)
-        {
+    for (int x : state.coverCount) {
+        if (x == 0) {
             return true;
         }
     }
@@ -73,19 +63,14 @@ static bool coverageIncomplete(
     return false;
 }
 
-static int computeCoverageScore(
-    const GreedyState& state,
-    int start,
-    const vector<int>& careOffsets)
+static int computeCoverageScore(const GreedyState& state, int start, const vector<int>& careOffsets)
 {
     int score = 0;
 
-    for (int off : careOffsets)
-    {
+    for (int off : careOffsets) {
         int pos = start + off;
 
-        if (state.coverCount[pos] == 0)
-        {
+        if (state.coverCount[pos] == 0) {
             score++;
         }
     }
@@ -93,15 +78,12 @@ static int computeCoverageScore(
     return score;
 }
 
-static double computeProtectionScore(
-    const GreedyState& state,
-    int start,
-    const vector<int>& protectOffsets)
+static double computeProtectionScore(const GreedyState& state, int start,
+                                     const vector<int>& protectOffsets)
 {
     double score = 0.0;
 
-    for (int off : protectOffsets)
-    {
+    for (int off : protectOffsets) {
         int pos = start + off;
 
         score += log((double)state.protectCount[pos] + 1.0);
@@ -110,23 +92,15 @@ static double computeProtectionScore(
     return score;
 }
 
-static int chooseBestCoverageSeed(
-    const GreedyState& state,
-    const vector<int>& careOffsets)
+static int chooseBestCoverageSeed(const GreedyState& state, const vector<int>& careOffsets)
 {
     int bestStart = -1;
     int bestScore = -1;
 
-    for (int start : state.remaining)
-    {
-        int score =
-            computeCoverageScore(
-                state,
-                start,
-                careOffsets);
+    for (int start : state.remaining) {
+        int score = computeCoverageScore(state, start, careOffsets);
 
-        if (score > bestScore)
-        {
+        if (score > bestScore) {
             bestScore = score;
             bestStart = start;
         }
@@ -135,89 +109,56 @@ static int chooseBestCoverageSeed(
     return bestStart;
 }
 
-static int chooseBestProtectionSeed(
-    const GreedyState& state,
-    const vector<int>& protectOffsets)
+static int chooseBestProtectionSeed(const GreedyState& state, const vector<int>& protectOffsets)
 {
-    double bestScore =
-        numeric_limits<double>::max();
+    double bestScore = numeric_limits<double>::max();
 
     vector<int> tiedStarts;
 
-    for (int start : state.remaining)
-    {
-        double score =
-            computeProtectionScore(
-                state,
-                start,
-                protectOffsets);
+    for (int start : state.remaining) {
+        double score = computeProtectionScore(state, start, protectOffsets);
 
-        if (score < bestScore)
-        {
-            bestScore =
-                score;
+        if (score < bestScore) {
+            bestScore = score;
 
             tiedStarts.clear();
 
-            tiedStarts.push_back(
-                start);
+            tiedStarts.push_back(start);
         }
-        else if (
-            fabs(score - bestScore)
-            < 1e-12)
-        {
-            tiedStarts.push_back(
-                start);
+        else if (fabs(score - bestScore) < 1e-12) {
+            tiedStarts.push_back(start);
         }
     }
 
-    return
-        tiedStarts[
-            tiedStarts.size() / 2];
+    return tiedStarts[tiedStarts.size() / 2];
 }
 
-static void applySeed(
-    GreedyState& state,
-    int start,
-    const vector<int>& careOffsets,
-    const vector<int>& protectOffsets)
+static void applySeed(GreedyState& state, int start, const vector<int>& careOffsets,
+                      const vector<int>& protectOffsets)
 {
     state.ordering.push_back(start);
 
-    for (int off : careOffsets)
-    {
+    for (int off : careOffsets) {
         state.coverCount[start + off]++;
     }
 
-    for (int off : protectOffsets)
-    {
+    for (int off : protectOffsets) {
         state.protectCount[start + off]++;
     }
 
     state.remaining.erase(start);
 }
 
-static void displayProtectionRow(
-    const GreedyState& state,
-    int start)
+static void displayProtectionRow(const GreedyState& state, int start)
 {
-    cout
-        << "Seed "
-        << setw(2)
-        << (state.ordering.size() - 1)
-        << " start="
-        << setw(2)
-        << start
-        << " : ";
+    cout << "Seed " << setw(2) << (state.ordering.size() - 1) << " start=" << setw(2) << start
+         << " : ";
 
-    for (int i = 0; i < state.readLength; i++)
-    {
-        if (state.protectable[i])
-        {
+    for (int i = 0; i < state.readLength; i++) {
+        if (state.protectable[i]) {
             cout << state.protectCount[i];
         }
-        else
-        {
+        else {
             cout << '.';
         }
     }
@@ -225,46 +166,25 @@ static void displayProtectionRow(
     cout << '\n';
 }
 
-vector<int> buildGreedyOrder(
-    int readLength,
-    int span,
-    const vector<int>& careOffsets,
-    const vector<int>& protectOffsets)
+vector<int> buildGreedyOrder(int readLength, int span, const vector<int>& careOffsets,
+                             const vector<int>& protectOffsets)
 {
-    GreedyState state =
-        initialiseState(
-            readLength,
-            span,
-            protectOffsets);
+    GreedyState state = initialiseState(readLength, span, protectOffsets);
 
     bool coverageCompletePrinted = false;
 
-    while (!state.remaining.empty())
-    {
-        bool coveragePhase =
-            coverageIncomplete(state);
+    while (!state.remaining.empty()) {
+        bool coveragePhase = coverageIncomplete(state);
 
         int start;
 
-        if (coveragePhase)
-        {
-            start =
-                chooseBestCoverageSeed(
-                    state,
-                    careOffsets);
+        if (coveragePhase) {
+            start = chooseBestCoverageSeed(state, careOffsets);
         }
-        else
-        {
-            start =
-                chooseBestProtectionSeed(
-                    state,
-                    protectOffsets);
+        else {
+            start = chooseBestProtectionSeed(state, protectOffsets);
         }
-        applySeed(
-            state,
-            start,
-            careOffsets,
-            protectOffsets);
+        applySeed(state, start, careOffsets, protectOffsets);
     }
 
     return state.ordering;

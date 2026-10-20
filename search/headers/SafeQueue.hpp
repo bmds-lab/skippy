@@ -11,8 +11,7 @@
 #include <mutex>
 #include <queue>
 
-struct Result
-{
+struct Result {
     // Add your data members here
     uint32_t sampleIndex;
     uint32_t refBegin;
@@ -21,22 +20,20 @@ struct Result
     uint32_t revComp;
 };
 
-template <typename T> class SafeQueue
-{
-  public:
-    void enqueue(const T &item)
+template <typename T> class SafeQueue {
+public:
+    void enqueue(const T& item)
     {
         std::lock_guard<std::mutex> lock(mutex);
         queue.push(item);
         condition.notify_one(); // Notify one waiting thread
     }
 
-    bool dequeue(T &item)
+    bool dequeue(T& item)
     {
         std::unique_lock<std::mutex> lock(mutex);
         condition.wait(lock, [this] { return !queue.empty() || finished; });
-        if (!queue.empty())
-        {
+        if (!queue.empty()) {
             item = queue.front();
             queue.pop();
             return true;
@@ -57,7 +54,7 @@ template <typename T> class SafeQueue
         return finished && queue.empty();
     }
 
-  private:
+private:
     std::queue<T> queue;
     mutable std::mutex mutex;
     std::condition_variable condition;

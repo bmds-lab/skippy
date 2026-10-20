@@ -24,6 +24,8 @@
             Walk chunks in order writing outerChunk and innerChunk.
             Then write hiBitmap as a separate file.
 */
+#include "serialiseKmersMap.hpp"
+
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -32,26 +34,21 @@
 #include <thread>
 #include <vector>
 
-#include "serialiseKmersMap.hpp"
-
-void serializeMap(std::vector<protected_vector<uint32_t>> &kmersMap,
-                  const std::string &innerMapFilename, const std::string &outerMapFilename)
+void serializeMap(std::vector<protected_vector<uint32_t>>& kmersMap,
+                  const std::string& innerMapFilename, const std::string& outerMapFilename)
 {
     constexpr uint32_t M = 10000;
 
-    const size_t totalSlots  = kmersMap.size();
-    const size_t numThreads  = std::max(size_t(1),
-                                   (size_t)std::thread::hardware_concurrency());
+    const size_t totalSlots = kmersMap.size();
+    const size_t numThreads = std::max(size_t(1), (size_t)std::thread::hardware_concurrency());
     const size_t slotsPerThread = (totalSlots + numThreads - 1) / numThreads;
 
-    std::cout << "Serialising " << totalSlots << " slots using "
-              << numThreads << " threads...\n";
+    std::cout << "Serialising " << totalSlots << " slots using " << numThreads << " threads...\n";
 
-    struct ChunkResult
-    {
+    struct ChunkResult {
         std::vector<uint32_t> outerChunk;
         std::vector<uint32_t> innerChunk;
-        uint32_t longest   = 0;
+        uint32_t longest = 0;
         uint32_t longCount = 0;
     };
 
@@ -64,41 +61,48 @@ void serializeMap(std::vector<protected_vector<uint32_t>> &kmersMap,
         std::vector<std::thread> threads;
         threads.reserve(numThreads);
 
-        for (size_t t = 0; t < numThreads; ++t)
-        {
+        for (size_t t = 0; t < numThreads; ++t) {
             const size_t slotStart = t * slotsPerThread;
-            const size_t slotEnd   = std::min(slotStart + slotsPerThread, totalSlots);
-            if (slotStart >= totalSlots) break;
+            const size_t slotEnd = std::min(slotStart + slotsPerThread, totalSlots);
+            if (slotStart >= totalSlots)
+                break;
 
-            threads.emplace_back([&, t, slotStart, slotEnd]()
-            {
-                ChunkResult &cr = chunks[t];
+            threads.emplace_back([&, t, slotStart, slotEnd]() {
+                ChunkResult& cr = chunks[t];
                 const size_t slotCount = slotEnd - slotStart;
                 cr.outerChunk.reserve(slotCount);
 
                 uint32_t localOffset = 0;
 
-                for (size_t i = slotStart; i < slotEnd; ++i)
-                {
-                    auto &vec = kmersMap[i];
+                for (size_t i = slotStart; i < slotEnd; ++i) {
+                    auto& vec = kmersMap[i];
                     const uint32_t len = static_cast<uint32_t>(vec.size());
 
-                    if (len > M) { ++cr.longCount; if (len > cr.longest) cr.longest = len; }
+                    if (len > M) {
+                        ++cr.longCount;
+                        if (len > cr.longest)
+                            cr.longest = len;
+                    }
 
                     cr.outerChunk.push_back(localOffset);
 
-                    if (len > 1) std::sort(vec.begin(), vec.end());
+                    if (len > 1)
+                        std::sort(vec.begin(), vec.end());
 
                     cr.innerChunk.insert(cr.innerChunk.end(), vec.begin(), vec.end());
 
                     localOffset += len;
 
-                    { protected_vector<uint32_t> tmp; vec.swap(tmp); }
+                    {
+                        protected_vector<uint32_t> tmp;
+                        vec.swap(tmp);
+                    }
                 }
             });
         }
 
-        for (auto &th : threads) th.join();
+        for (auto& th : threads)
+            th.join();
     }
 
     std::cout << "Phase 1 complete. Fixing up offsets...\n";
@@ -113,7 +117,8 @@ void serializeMap(std::vector<protected_vector<uint32_t>> &kmersMap,
     for (size_t t = 1; t < numThreads; ++t)
         prefixSum[t] = prefixSum[t - 1] + chunks[t - 1].innerChunk.size();
 
-    const uint64_t totalEntries = prefixSum[numThreads-1] + chunks[numThreads-1].innerChunk.size();
+    const uint64_t totalEntries =
+        prefixSum[numThreads - 1] + chunks[numThreads - 1].innerChunk.size();
     if (totalEntries > 0xFFFFFFFFULL)
         std::cout << "Note: innerBlob has " << totalEntries
                   << " entries (>4G) - hi-bit bitmap active\n";
@@ -126,21 +131,18 @@ void serializeMap(std::vector<protected_vector<uint32_t>> &kmersMap,
         std::vector<std::thread> threads;
         threads.reserve(numThreads);
 
-        for (size_t t = 0; t < numThreads; ++t)
-        {
-            threads.emplace_back([&, t]()
-            {
+        for (size_t t = 0; t < numThreads; ++t) {
+            threads.emplace_back([&, t]() {
                 const uint64_t base = prefixSum[t];
                 const size_t slotStart = t * slotsPerThread;
-                const size_t slotEnd   = std::min(slotStart + slotsPerThread, totalSlots);
+                const size_t slotEnd = std::min(slotStart + slotsPerThread, totalSlots);
                 const size_t slotCount = slotEnd - slotStart;
 
                 const size_t localWords = (slotCount + 31) / 32;
                 localBitmaps[t].assign(localWords, 0);
 
                 size_t localSlot = 0;
-                for (uint32_t &entry : chunks[t].outerChunk)
-                {
+                for (uint32_t& entry : chunks[t].outerChunk) {
                     const uint64_t absOffset = base + entry;
                     entry = static_cast<uint32_t>(absOffset & 0xFFFFFFFF);
                     if (absOffset >> 32)
@@ -150,17 +152,20 @@ void serializeMap(std::vector<protected_vector<uint32_t>> &kmersMap,
             });
         }
 
-        for (auto &th : threads) th.join();
+        for (auto& th : threads)
+            th.join();
     }
 
     // Merge local bitmaps into global hiBitmap
-    for (size_t t = 0; t < numThreads; ++t)
-    {
+    for (size_t t = 0; t < numThreads; ++t) {
         const size_t slotStart = t * slotsPerThread;
         for (size_t i = 0; i < localBitmaps[t].size(); ++i)
             if (localBitmaps[t][i])
                 hiBitmap[(slotStart / 32) + i] |= localBitmaps[t][i];
-        { std::vector<uint32_t> tmp; localBitmaps[t].swap(tmp); }
+        {
+            std::vector<uint32_t> tmp;
+            localBitmaps[t].swap(tmp);
+        }
     }
 
     std::cout << "Phase 2 complete. Writing to disk...\n";
@@ -171,26 +176,30 @@ void serializeMap(std::vector<protected_vector<uint32_t>> &kmersMap,
     {
         std::ofstream innerFile(innerMapFilename, std::ios::binary);
         std::ofstream outerFile(outerMapFilename, std::ios::binary);
-        if (!innerFile || !outerFile)
-        {
+        if (!innerFile || !outerFile) {
             std::cerr << "serializeMap: failed to open output files\n";
             return;
         }
 
-        for (size_t t = 0; t < numThreads; ++t)
-        {
-            ChunkResult &cr = chunks[t];
+        for (size_t t = 0; t < numThreads; ++t) {
+            ChunkResult& cr = chunks[t];
 
             if (!cr.outerChunk.empty())
-                outerFile.write(reinterpret_cast<const char *>(cr.outerChunk.data()),
+                outerFile.write(reinterpret_cast<const char*>(cr.outerChunk.data()),
                                 cr.outerChunk.size() * sizeof(uint32_t));
 
             if (!cr.innerChunk.empty())
-                innerFile.write(reinterpret_cast<const char *>(cr.innerChunk.data()),
+                innerFile.write(reinterpret_cast<const char*>(cr.innerChunk.data()),
                                 cr.innerChunk.size() * sizeof(uint32_t));
 
-            { std::vector<uint32_t> tmp; cr.outerChunk.swap(tmp); }
-            { std::vector<uint32_t> tmp; cr.innerChunk.swap(tmp); }
+            {
+                std::vector<uint32_t> tmp;
+                cr.outerChunk.swap(tmp);
+            }
+            {
+                std::vector<uint32_t> tmp;
+                cr.innerChunk.swap(tmp);
+            }
         }
 
         innerFile.close();
@@ -207,30 +216,29 @@ void serializeMap(std::vector<protected_vector<uint32_t>> &kmersMap,
             hiBitFilename += "_HiBit";
 
         std::ofstream hiBitFile(hiBitFilename, std::ios::binary);
-        if (hiBitFile)
-        {
-            hiBitFile.write(reinterpret_cast<const char *>(hiBitmap.data()),
+        if (hiBitFile) {
+            hiBitFile.write(reinterpret_cast<const char*>(hiBitmap.data()),
                             hiBitmap.size() * sizeof(uint32_t));
             hiBitFile.close();
-            std::cout << "Hi-bit bitmap written ("
-                      << hiBitmap.size() * 4 / (1024*1024) << " MB)\n";
+            std::cout << "Hi-bit bitmap written (" << hiBitmap.size() * 4 / (1024 * 1024)
+                      << " MB)\n";
         }
     }
 
     // Reduce stats
     uint32_t longest = 0, longCount = 0;
-    for (const auto &cr : chunks)
-    {
-        if (cr.longest > longest) longest = cr.longest;
+    for (const auto& cr : chunks) {
+        if (cr.longest > longest)
+            longest = cr.longest;
         longCount += cr.longCount;
     }
     std::cout << "Longest inner vector: " << longest << "\n";
     std::cout << "Inner vectors length > " << M << ": " << longCount << "\n";
 }
 
-void deserializeMap(const std::string &innerMapFilename, const std::string &outerMapFilename,
-                    std::vector<uint32_t> &innerMapBlob, std::vector<uint32_t> &outerMapBlob,
-                    std::vector<uint32_t> &hiBitmap)
+void deserializeMap(const std::string& innerMapFilename, const std::string& outerMapFilename,
+                    std::vector<uint32_t>& innerMapBlob, std::vector<uint32_t>& outerMapBlob,
+                    std::vector<uint32_t>& hiBitmap)
 {
     std::ifstream innerMapFile(innerMapFilename, std::ios::binary);
     std::ifstream outerMapFile(outerMapFilename, std::ios::binary);
@@ -244,10 +252,10 @@ void deserializeMap(const std::string &innerMapFilename, const std::string &oute
     outerMapFile.seekg(0, std::ios::beg);
 
     innerMapBlob.resize(innerBlobSize / sizeof(uint32_t));
-    innerMapFile.read(reinterpret_cast<char *>(innerMapBlob.data()), innerBlobSize);
+    innerMapFile.read(reinterpret_cast<char*>(innerMapBlob.data()), innerBlobSize);
 
     outerMapBlob.resize(outerBlobSize / sizeof(uint32_t));
-    outerMapFile.read(reinterpret_cast<char *>(outerMapBlob.data()), outerBlobSize);
+    outerMapFile.read(reinterpret_cast<char*>(outerMapBlob.data()), outerBlobSize);
 
     innerMapFile.close();
     outerMapFile.close();
@@ -261,57 +269,58 @@ void deserializeMap(const std::string &innerMapFilename, const std::string &oute
         hiBitFilename += "_HiBit";
 
     std::ifstream hiBitFile(hiBitFilename, std::ios::binary);
-    if (hiBitFile.is_open())
-    {
+    if (hiBitFile.is_open()) {
         hiBitFile.seekg(0, std::ios::end);
         size_t hiBitSize = hiBitFile.tellg();
         hiBitFile.seekg(0, std::ios::beg);
         hiBitmap.resize(hiBitSize / sizeof(uint32_t));
-        hiBitFile.read(reinterpret_cast<char *>(hiBitmap.data()), hiBitSize);
+        hiBitFile.read(reinterpret_cast<char*>(hiBitmap.data()), hiBitSize);
         hiBitFile.close();
-        std::cerr << "Loaded hi-bit bitmap (" << hiBitSize / (1024*1024) << " MB)\n";
+        std::cerr << "Loaded hi-bit bitmap (" << hiBitSize / (1024 * 1024) << " MB)\n";
     }
     else
         hiBitmap.clear();
 }
 
-std::vector<uint32_t> getInnerVector(const std::vector<uint32_t> &innerMapBlob,
-                                     const std::vector<uint32_t> &outerMapBlob, size_t index)
+std::vector<uint32_t> getInnerVector(const std::vector<uint32_t>& innerMapBlob,
+                                     const std::vector<uint32_t>& outerMapBlob, size_t index)
 {
     std::vector<uint32_t> innerVector;
-    if (index < outerMapBlob.size())
-    {
+    if (index < outerMapBlob.size()) {
         size_t startOffset = outerMapBlob[index];
-        size_t endOffset = (index + 1 < outerMapBlob.size())
-                               ? outerMapBlob[index + 1] : innerMapBlob.size();
+        size_t endOffset =
+            (index + 1 < outerMapBlob.size()) ? outerMapBlob[index + 1] : innerMapBlob.size();
         innerVector = std::vector<uint32_t>(innerMapBlob.begin() + startOffset,
                                             innerMapBlob.begin() + endOffset);
     }
     return innerVector;
 }
 
-bool writeTextBlobToFile(const char *text, std::size_t length, const std::string &filename)
+bool writeTextBlobToFile(const char* text, std::size_t length, const std::string& filename)
 {
     std::ofstream outputFile(filename, std::ios::binary);
-    if (!outputFile.is_open()) return false;
+    if (!outputFile.is_open())
+        return false;
     outputFile.write(text, length);
     outputFile.close();
     return true;
 }
 
-std::pair<char *, std::size_t> readTextBlobFromFile(const std::string &filename)
+std::pair<char*, std::size_t> readTextBlobFromFile(const std::string& filename)
 {
     std::ifstream inputFile(filename, std::ios::binary | std::ios::ate);
-    if (!inputFile.is_open()) return {nullptr, 0};
+    if (!inputFile.is_open())
+        return {nullptr, 0};
 
     std::size_t length = inputFile.tellg();
     inputFile.seekg(0);
 
     std::vector<char> buffer(length);
-    if (!inputFile.read(buffer.data(), length)) return {nullptr, 0};
+    if (!inputFile.read(buffer.data(), length))
+        return {nullptr, 0};
 
     inputFile.close();
-    char *textBlob = new char[length];
+    char* textBlob = new char[length];
     std::memcpy(textBlob, buffer.data(), length);
     return {textBlob, length};
 }

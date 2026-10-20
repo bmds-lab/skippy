@@ -5,15 +5,14 @@
 #include <vector>
 
 // Forward packing - works for any weight (16 or 24+)
-inline bool packStripeKmer(std::string_view window, uint64_t &packed)
+inline bool packStripeKmer(std::string_view window, uint64_t& packed)
 {
     if ((int)window.size() < gPattern.window)
         return false;
 
     if (gPattern.use64)
         return gPattern.encode64(window.data(), packed);
-    else
-    {
+    else {
         uint32_t p32 = 0;
         bool ok = gPattern.encode32(window.data(), p32);
         packed = p32;
@@ -22,12 +21,11 @@ inline bool packStripeKmer(std::string_view window, uint64_t &packed)
 }
 
 // RC packing
-inline bool packStripeKmerRC(const char* wptr, uint64_t &packed)
+inline bool packStripeKmerRC(const char* wptr, uint64_t& packed)
 {
     if (gPattern.use64)
         return gPattern.encode_rc64(wptr, packed);
-    else
-    {
+    else {
         uint32_t p32 = 0;
         bool ok = gPattern.encode_rc32(wptr, p32);
         packed = p32;
@@ -35,22 +33,17 @@ inline bool packStripeKmerRC(const char* wptr, uint64_t &packed)
     }
 }
 
-class StripePattern
-{
+class StripePattern {
 public:
-
     StripePattern();
 
     bool parse(const std::string& pattern);
 
-    const std::string&
-    patternString() const;
+    const std::string& patternString() const;
 
-    const std::vector<int>&
-    blockSizes() const;
+    const std::vector<int>& blockSizes() const;
 
-    const std::vector<int>&
-    informativeOffsets() const;
+    const std::vector<int>& informativeOffsets() const;
 
     int informativeBases() const;
 
@@ -59,7 +52,6 @@ public:
     void print() const;
 
 private:
-
     std::string patternString_;
 
     std::vector<int> blockSizes_;

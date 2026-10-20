@@ -8,21 +8,14 @@ struct StripePattern;
 
 extern std::vector<std::vector<uint32_t>> gGreedyOrders;
 
-void initialiseGreedyOrders(
-    const StripePattern& pattern);
+void initialiseGreedyOrders(const StripePattern& pattern);
 
-bool loadGreedyOrders(
-    const std::string& filename);
+bool loadGreedyOrders(const std::string& filename);
 
-bool saveGreedyOrders(
-    const std::string& filename);
+bool saveGreedyOrders(const std::string& filename);
 
-void initialiseGreedyOrders(
-    const StripePattern& pattern);
+void initialiseGreedyOrders(const StripePattern& pattern);
 
-bool loadGreedyOrders(
-    const std::string& filename);
+bool loadGreedyOrders(const std::string& filename);
 
-bool saveGreedyOrders(
-    const std::string& filename);
-
+bool saveGreedyOrders(const std::string& filename);

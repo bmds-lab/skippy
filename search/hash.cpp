@@ -25,8 +25,8 @@ uint32_t murmurHash3(uint64_t key)
 /*
 uint32_t murmurHash3(uint64_t packedKmer) {
     // not murmurHash32, used just for testing
-    uint32_t hash = static_cast<uint32_t>(packedKmer >> 32) ^ static_cast<uint32_t>(packedKmer);
-    return hash;
+    uint32_t hash = static_cast<uint32_t>(packedKmer >> 32) ^
+static_cast<uint32_t>(packedKmer); return hash;
 }
 */
 /*
