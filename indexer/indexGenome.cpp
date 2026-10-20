@@ -99,7 +99,7 @@ char* load_genome_file(const std::string& fastaFile,
         and >32-mer (uint64_t packed) cases.  Both hash down to uint32_t for
         the index, so outerBlob/innerBlob are unchanged.
 */
-void index_kmers_thread(char* genome, uint64_t offset, uint64_t genomeSize,
+void index_kmers_thread(char* genome, uint64_t offset, uint64_t genomeSize, uint64_t startCount,
                         std::vector<protected_vector<uint32_t>>& kmersMap, uint32_t MASK,
                         const StripePattern& pat, const StripePattern& pat2)
 {
@@ -114,16 +114,17 @@ void index_kmers_thread(char* genome, uint64_t offset, uint64_t genomeSize,
     if (useStripe) {
         if (!pat.use64) {
             // ---- 32-bit packed (weight <= 32) ----
-            for (uint32_t pos = 0; pos + (uint32_t)pat.window <= genomeSize; ++pos) {
+            for (uint32_t pos = 0; pos < startCount; ++pos) {
                 uint32_t packed;
-                if (pat.encode32(genome + pos, packed)) {
+                if (pos + static_cast<uint64_t>(pat.window) <= genomeSize &&
+                    pat.encode32(genome + pos, packed)) {
                     uint32_t kmerHash =
                         needsHashing ? murmurHash3(static_cast<uint64_t>(packed)) & MASK : packed;
                     kmersMap[kmerHash].push_back(pos + (uint32_t)offset);
                 }
 
                 // Second pattern — same position, independent hash
-                if (useDual) {
+                if (useDual && pos + static_cast<uint64_t>(pat2.window) <= genomeSize) {
                     uint32_t packed2;
                     if (pat2.encode32(genome + pos, packed2)) {
                         uint32_t kmerHash2 =
@@ -138,14 +139,15 @@ void index_kmers_thread(char* genome, uint64_t offset, uint64_t genomeSize,
         }
         else {
             // ---- 64-bit packed (weight 33..64) ----
-            for (uint32_t pos = 0; pos + (uint32_t)pat.window <= genomeSize; ++pos) {
+            for (uint32_t pos = 0; pos < startCount; ++pos) {
                 uint64_t packed;
-                if (pat.encode64(genome + pos, packed)) {
+                if (pos + static_cast<uint64_t>(pat.window) <= genomeSize &&
+                    pat.encode64(genome + pos, packed)) {
                     uint32_t kmerHash = murmurHash3(packed) & MASK;
                     kmersMap[kmerHash].push_back(pos + (uint32_t)offset);
                 }
 
-                if (useDual) {
+                if (useDual && pos + static_cast<uint64_t>(pat2.window) <= genomeSize) {
                     uint64_t packed2;
                     if (pat2.encode64(genome + pos, packed2)) {
                         uint32_t kmerHash2 = murmurHash3(packed2) & MASK;
@@ -168,7 +170,7 @@ void index_kmers_thread(char* genome, uint64_t offset, uint64_t genomeSize,
         pkmer >>= 2;
         char* encode_pos = genome + 31;
 
-        for (uint32_t pos = 0; pos < genomeSize; pos++) {
+        for (uint32_t pos = 0; pos < startCount; pos++) {
             if (toupper(*encode_pos) == 'N')
                 ncountdown = 32;
             uint64_t new_base = encode_kmer_2bit::pack_1mer(*encode_pos++);
@@ -192,8 +194,16 @@ void index_kmers(char* genome, uint64_t genomeSize,
                  std::vector<protected_vector<uint32_t>>& kmersMap, uint32_t MASK,
                  const StripePattern& pat, const StripePattern& pat2)
 {
-    size_t thread_count = std::max(1u, std::thread::hardware_concurrency());
-    uint64_t chunk_size = genomeSize / thread_count;
+    uint64_t window = pat.pattern_str.empty() ? 32 : pat.window;
+    if (!pat.pattern_str.empty() && !pat2.pattern_str.empty())
+        window = std::min(window, static_cast<uint64_t>(pat2.window));
+    if (genomeSize < window)
+        return;
+    // Partition starting positions, keeping the window's trailing bases available.
+    const uint64_t startCount = genomeSize - window + 1;
+    size_t thread_count =
+        std::min<uint64_t>(std::max(1u, std::thread::hardware_concurrency()), startCount);
+    uint64_t chunk_size = startCount / thread_count;
     uint64_t start = 0;
 
     std::vector<std::thread> threads;
@@ -202,11 +212,12 @@ void index_kmers(char* genome, uint64_t genomeSize,
     std::cout << "Launching " << thread_count << " threads each with " << chunk_size << " pieces\n";
 
     for (size_t i = 0; i < thread_count - 1; i++) {
-        threads.emplace_back(index_kmers_thread, genome, start, chunk_size, std::ref(kmersMap),
-                             MASK, std::cref(pat), std::cref(pat2));
+        threads.emplace_back(index_kmers_thread, genome, start, genomeSize - start, chunk_size,
+                             std::ref(kmersMap), MASK, std::cref(pat), std::cref(pat2));
         start += chunk_size;
     }
-    index_kmers_thread(genome, start, genomeSize - start - 31, kmersMap, MASK, pat, pat2);
+    index_kmers_thread(genome, start, genomeSize - start, startCount - start, kmersMap, MASK, pat,
+                       pat2);
 
     for (auto& thread : threads)
         thread.join();

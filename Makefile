@@ -54,7 +54,11 @@ build/indexer build/search:
 clean:
 	rm -rf build skippy
 
-test: skippy
+build/test_index: tests/test_index.cpp $(filter-out build/indexer/main.o,$(INDEX_OBJECTS))
+	$(CXX) $(CXXFLAGS) $(filter-out -Dmain=index_main,$(INDEX_DEFINES)) -Iindexer $^ -o $@
+
+test: skippy build/test_index
+	./build/test_index
 	python3 -m tests.test_cli
 	python3 -m tests.test_mito
 

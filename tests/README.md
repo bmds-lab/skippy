@@ -2,6 +2,9 @@
 
 Requires Python 3, make, and the C++ compiler. No pip packages or downloads.
 
+`make test` includes index boundary checks on small references and failed
+seed-matrix writes. The SAM test also searches 120 files with a low open-file limit.
+
 ```bash
 python3 -m tests.mito        # build, index, search, check
 python3 -m tests.mito search # rebuild skippy, reuse index, check

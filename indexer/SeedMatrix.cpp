@@ -96,7 +96,8 @@ bool SeedMatrix::save(const std::string& filename) const
         out.write((const char*)truncSeeds_.data(), n * sizeof(uint16_t));
         out.write((const char*)truncErrorRates_.data(), n * sizeof(uint16_t));
     }
-    return true;
+    out.close();
+    return static_cast<bool>(out);
 }
 
 bool SeedMatrix::load(const string& filename)

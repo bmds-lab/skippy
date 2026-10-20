@@ -216,6 +216,12 @@ bool generateSeedMatrix(const StripePattern& pattern, PlacementStrategy strategy
         }
     }
 
+    csv.close();
+    if (!csv) {
+        cerr << "ERROR: Failed to write " << csvName << "\n";
+        return false;
+    }
+
     {
         ios_base::fmtflags savedFlags = cout.flags();
         streamsize savedPrec = cout.precision();
@@ -299,10 +305,11 @@ bool generateSeedMatrix(const StripePattern& pattern, PlacementStrategy strategy
         sm.setTruncSeeds(truncSeeds);
         sm.setTruncErrorRates(truncErrorRate);
 
-        if (!sm.save(binName))
+        if (!sm.save(binName)) {
             cerr << "ERROR: Failed to write truncation to " << binName << "\n";
-        else
-            cout << "Updated " << binName << " with truncation matrix\n";
+            return false;
+        }
+        cout << "Updated " << binName << " with truncation matrix\n";
 
         // Save truncation CSVs
         auto saveTruncCSV = [&](const string& path, const vector<uint16_t>& data) {

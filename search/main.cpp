@@ -438,6 +438,10 @@ void writer(FileContext& ctx, size_t genomeLength)
         }
     }
 
+    // Enqueueing is finished; let the writer release these even on an error.
+    auto samReads = std::move(ctx.samReads);
+    auto samData = std::move(ctx.samData);
+
     std::set<uint32_t> missingMates;
     if (PAIRED_READS) {
         for (const auto& [index, res] : resultsMap) {
@@ -487,9 +491,9 @@ void writer(FileContext& ctx, size_t genomeLength)
                     << '\n';
         }
 
-        for (size_t index = 0; index < ctx.samReads.size(); ++index) {
-            const ReadInfo& ri = ctx.samReads[index];
-            const char* data = ctx.samData.get();
+        for (size_t index = 0; index < samReads.size(); ++index) {
+            const ReadInfo& ri = samReads[index];
+            const char* data = samData.get();
             std::string name(data + ri.nameStart, ri.nameLength);
             if (name.empty())
                 name = std::to_string(index + 1);
@@ -767,14 +771,13 @@ static std::shared_ptr<char[]> mmap_entire_file(const std::string& path, uint64_
         return {};
     }
 
-    // shared_ptr takes ownership; unmap+close on last release
+    // The mapping remains valid after closing the file descriptor.
+    ::close(fd);
     char* data = static_cast<char*>(p);
 
-    return std::shared_ptr<char[]>(data, [fileSize, fd](char* ptr) {
+    return std::shared_ptr<char[]>(data, [fileSize](char* ptr) {
         if (ptr && fileSize > 0)
             ::munmap(ptr, static_cast<size_t>(fileSize));
-        if (fd >= 0)
-            ::close(fd);
     });
 }
 

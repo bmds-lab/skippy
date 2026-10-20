@@ -5,6 +5,7 @@ Run after indexing: python3 -m tests.test_sam [path/to/mito]
 
 import pathlib
 import re
+import resource
 import subprocess
 import sys
 import tempfile
@@ -73,7 +74,34 @@ def main() -> None:
         )
         assert failed.returncode == 1 and "Error opening file" in failed.stderr
 
-    print("PASS: SAM records and output-error handling")
+        many = work / "many"
+        many.mkdir()
+        for i in range(120):
+            (many / f"{i:03}.fq").write_text(
+                f"@read_{i}\n{reads[names[2]]}\n+\n{qualities[names[2]]}\n"
+            )
+        output = work / "many_results"
+        output.mkdir()
+
+        def limit_open_files() -> None:
+            _, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+            soft = 64 if hard == resource.RLIM_INFINITY else min(64, hard)
+            resource.setrlimit(resource.RLIMIT_NOFILE, (soft, hard))
+
+        result = subprocess.run(
+            [str(ROOT / "skippy"), "search", "-genome", str(genome), "-stripe", "plain",
+             "-technology", "illumina", "-data", str(many), "-out_dir", str(output),
+             "-format", "sam", "-threads", "2"],
+            capture_output=True, text=True, timeout=30, preexec_fn=limit_open_files,
+        )
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert len(list(output.glob("*.sam"))) == 120
+        for i in range(120):
+            records = [line for line in (output / f"{i:03}.sam").read_text().splitlines()
+                       if not line.startswith("@")]
+            assert len(records) == 1 and records[0].startswith(f"read_{i}\t4\t")
+
+    print("PASS: SAM records, output errors, and directory file limits")
 
 
 if __name__ == "__main__":
