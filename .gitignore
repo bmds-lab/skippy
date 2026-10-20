@@ -6,6 +6,8 @@ indexer/indexReference
 search/skippy
 skippy
 build/
+.venv/
+docs/_build/
 
 # Editor / OS
 *~

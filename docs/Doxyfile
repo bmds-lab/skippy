@@ -1,0 +1,10 @@
+PROJECT_NAME           = Skippy
+OUTPUT_DIRECTORY       = docs/_build
+INPUT                  = indexer/indexGenome.hpp search/headers/findSpans.hpp
+EXTRACT_ALL            = YES
+GENERATE_HTML          = NO
+GENERATE_LATEX         = NO
+GENERATE_XML           = YES
+XML_OUTPUT             = xml
+QUIET                  = YES
+WARN_IF_UNDOCUMENTED   = NO

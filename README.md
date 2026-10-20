@@ -51,6 +51,18 @@ Search:
 - g++ with C++20
 - pthread
 
+## Documentation
+
+Install Doxygen (on Fedora: `sudo dnf install doxygen`), then build the docs:
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -r docs/requirements.txt
+make docs
+```
+
+Open `docs/_build/html/index.html`. The docs build requires Python 3.12 or newer.
+
 ## Formatting
 
 The root `.clang-format` follows the C++ Core Guidelines' suggested Stroustrup

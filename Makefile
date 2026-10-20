@@ -30,7 +30,7 @@ SEARCH_FLAGS = -DUSE_EDLIB -Isearch/edlib-1.2.7/edlib/include
 LINT_SEARCH_SOURCES += alignSequences_edlib.cpp
 endif
 
-.PHONY: all clean test lint
+.PHONY: all clean test lint docs
 all: skippy
 
 skippy: main.cpp $(INDEX_OBJECTS) $(SEARCH_OBJECTS)
@@ -67,3 +67,7 @@ lint:
 		$(CLANG_TIDY) "$$source" -- $(CXXFLAGS) $(SEARCH_FLAGS) -Dmain=search_main \
 			-Isearch/headers || exit $$?; \
 	done
+
+docs:
+	doxygen docs/Doxyfile
+	.venv/bin/sphinx-build -b html -W --keep-going docs docs/_build/html
